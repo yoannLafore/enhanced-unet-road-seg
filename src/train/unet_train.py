@@ -71,7 +71,7 @@ def evaluate_epoch(model, dataloader, criterion, device):
             # Generate predicted masks
             # TODO : Shouldn't we apply a softmax here ?
             preds = (outputs > 0.5).float()
-            wandb.log({"val_loss": loss.item()})
+
             wandb.log(
                 {"images": [wandb.Image(img, caption="Input Image") for img in images]}
             )
@@ -106,8 +106,11 @@ def evaluate_epoch(model, dataloader, criterion, device):
         recall = recall_score(masks_flat.cpu(), preds_flat.cpu())
         f1 = f1_score(masks_flat.cpu(), preds_flat.cpu())
 
+        epoch_loss = running_loss / len(dataloader.dataset)
+
         wandb.log(
             {
+                "val_loss": epoch_loss,
                 "val_accuracy": accuracy,
                 "val_precision": precision,
                 "val_recall": recall,
@@ -115,7 +118,6 @@ def evaluate_epoch(model, dataloader, criterion, device):
             }
         )
 
-    epoch_loss = running_loss / len(dataloader.dataset)
     return epoch_loss
 
 
