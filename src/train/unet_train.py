@@ -1,3 +1,4 @@
+from src.preprocessing.transform import augmented_transform, default_transform
 from src.model.unet import *
 from src.preprocessing.dataset import *
 import os
@@ -149,31 +150,8 @@ def main():
     print(f"Total number of training samples: {len(all_imgs_train)}")
     print(f"Total number of validation samples: {len(all_imgs_val)}")
 
-    normalize_step = A.Normalize(
-        mean=(0.33298134, 0.33009373, 0.29579783),
-        std=(0.18409964, 0.17780256, 0.17631003),
-    )
-
     # Transform for datasets
-    transform = A.Compose(
-        [
-            A.HorizontalFlip(p=0.5),
-            A.RandomRotate90(p=0.5),
-            A.ShiftScaleRotate(
-                shift_limit=0.05, scale_limit=0.1, rotate_limit=180, p=0.9
-            ),
-            A.RandomBrightnessContrast(p=0.8),
-            normalize_step,
-            ToTensorV2(),
-        ]
-    )
-
-    default_transform = A.Compose(
-        [
-            normalize_step,
-            ToTensorV2(),
-        ]
-    )
+    transform = augmented_transform()
 
     # Create dataset objects
     train_dataset = RoadSegDataset(all_imgs_train, all_masks_train, transform=transform)
