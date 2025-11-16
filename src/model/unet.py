@@ -89,24 +89,24 @@ class Decoder(nn.Module):
 
 class Unet(nn.Module):
 
-    def __init__(self):
+    def __init__(self, in_channels=3, out_channels=1, dropout_prob=0.5):
         super().__init__()
 
-        self.enc1 = Encoder(3, 64)
+        self.enc1 = Encoder(in_channels, 64)
         self.enc2 = Encoder(64, 128)
         self.enc3 = Encoder(128, 256)
         self.enc4 = Encoder(256, 512)
 
         self.bottom_conv = DoubleConv(512, 1024)
         self.bottom_conv2 = DoubleConv(1024, 1024)
-        self.dropout = nn.Dropout2d(p=0.5)
+        self.dropout = nn.Dropout2d(p=dropout_prob)
 
         self.dec1 = Decoder(1024, 512, 512, 512)
         self.dec2 = Decoder(512, 256, 256, 256)
         self.dec3 = Decoder(256, 128, 128, 128)
         self.dec4 = Decoder(128, 64, 64, 64)
 
-        self.conv_map = nn.Conv2d(64, 1, 1)
+        self.conv_map = nn.Conv2d(64, out_channels, 1)
 
     def forward(self, x):
         enc1_out, skip_enc1 = self.enc1(x)
