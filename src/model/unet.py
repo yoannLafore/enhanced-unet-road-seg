@@ -98,6 +98,8 @@ class Unet(nn.Module):
         self.enc4 = Encoder(256, 512)
 
         self.bottom_conv = DoubleConv(512, 1024)
+        self.bottom_conv2 = DoubleConv(1024, 1024)
+        self.dropout = nn.Dropout2d(p=0.5)
 
         self.dec1 = Decoder(1024, 512, 512, 512)
         self.dec2 = Decoder(512, 256, 256, 256)
@@ -113,6 +115,8 @@ class Unet(nn.Module):
         enc4_out, skip_enc4 = self.enc4(enc3_out)
 
         x = self.bottom_conv(enc4_out)
+        x = self.bottom_conv2(x)
+        x = self.dropout(x)
 
         x = self.dec1(x, skip_enc4)
         x = self.dec2(x, skip_enc3)
