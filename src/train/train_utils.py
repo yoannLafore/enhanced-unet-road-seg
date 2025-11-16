@@ -6,6 +6,7 @@ from sklearn.metrics import (
     recall_score,
     f1_score,
 )
+from src.preprocessing.transform import denormalize_tensor
 
 
 # Train the basic model for one epoch
@@ -17,7 +18,6 @@ def train_epoch(model, dataloader, optimizer, criterion, device, log_wandb=True)
         # Move to device
         images = images.to(device)
         masks = masks.to(device)
-        masks = masks.unsqueeze(1)  # Add channel dimension
         optimizer.zero_grad()
 
         # Forward pass
@@ -52,7 +52,6 @@ def evaluate_epoch(model, dataloader, criterion, device, threshold=0.5, log_wand
         for images, masks in dataloader:
             images = images.to(device)
             masks = masks.to(device)
-            masks = masks.unsqueeze(1)  # Add channel dimension
 
             _, outputs = model(images)
             loss = criterion(outputs, masks)
@@ -63,9 +62,12 @@ def evaluate_epoch(model, dataloader, criterion, device, threshold=0.5, log_wand
             preds_flat = (outputs.view(-1) > threshold).long()
             masks_flat = (masks.view(-1) > threshold).long()
 
+            # Store for overall metrics
+            denormalized_imgs = denormalize_tensor(images.cpu()).clamp(0, 1)
+
             preds_list.append(preds_flat)
             masks_list.append(masks_flat)
-            imgs_list.append(images)
+            imgs_list.append(denormalized_imgs)
 
         # Concatenate all tensors
         preds_flat = torch.cat(preds_list)
@@ -96,17 +98,15 @@ def evaluate_epoch(model, dataloader, criterion, device, threshold=0.5, log_wand
         if log_wandb:
             wandb.log(stats)
             wandb.log(
-                {"images": [wandb.Image(img, caption="Input Image") for img in imgs]},
                 {
+                    "images": [wandb.Image(img, caption="Input Image") for img in imgs],
                     "predicted_masks": [
                         wandb.Image(img, caption="Predicted Mask") for img in preds
-                    ]
-                },
-                {
+                    ],
                     "ground_truth_masks": [
                         wandb.Image(img, caption="Ground Truth Mask") for img in masks
-                    ]
-                },
+                    ],
+                }
             )
 
     return stats
