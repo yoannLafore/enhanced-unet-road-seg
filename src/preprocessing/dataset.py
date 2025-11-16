@@ -30,6 +30,7 @@ class RoadSegDataset(Dataset):
             augmented = self.transform(image=image, mask=mask)
             image = augmented["image"]
             mask = augmented["mask"]
+            mask = mask.unsqueeze(0)  # Add channel dimension
             # TODO : How do we make sure both are float tensors?
 
         return image, mask
