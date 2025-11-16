@@ -3,17 +3,12 @@ from src.model.unet import *
 from src.preprocessing.dataset import *
 import os
 from sklearn.model_selection import train_test_split
-import albumentations as A
-from albumentations.pytorch import ToTensorV2
 import torch
 from tqdm import tqdm
 import wandb
-from sklearn.metrics import (
-    accuracy_score,
-    precision_score,
-    recall_score,
-    f1_score,
-)
+
+
+from src.train.train_utils import evaluate_epoch, train_epoch
 
 # TODO :
 # - Why are the validation metrics doing zigzag ?
@@ -24,102 +19,6 @@ from sklearn.metrics import (
 # - LR scheduler : Try CosineAnnealing with warm restarts
 # TODO: VERY IMPORTANT : COMPUTE VALIDATION METRICS OVER THE FULL DATASET not per BATCH !!!
 # TODO: For now we use cross entropy with loagits, but the mask values are 0 and 1, might be better to apply a sigmoid first and use BCE loss ?
-
-
-def train_epoch(model, dataloader, optimizer, criterion, device):
-    model.train()
-    running_loss = 0.0
-
-    for images, masks in dataloader:
-        images = images.to(device)
-        masks = masks.to(device)
-        masks = masks.unsqueeze(1)  # Add channel dimension
-        optimizer.zero_grad()
-
-        _, outputs = model(images)
-        loss = criterion(outputs, masks)
-        loss.backward()
-        optimizer.step()
-
-        wandb.log({"train_loss": loss.item()})
-
-        running_loss += loss.item() * images.size(0)
-
-    epoch_loss = running_loss / len(dataloader.dataset)
-    return epoch_loss
-
-
-def evaluate_epoch(model, dataloader, criterion, device):
-    # Compute accuracy, precision, recall, F1-score on validation set
-    # Also generate the mask, compare them to ground truth and save to wandb
-    model.eval()
-    running_loss = 0.0
-
-    with torch.no_grad():
-
-        preds_list = []
-        masks_list = []
-
-        for images, masks in dataloader:
-            images = images.to(device)
-            masks = masks.to(device)
-            masks = masks.unsqueeze(1)  # Add channel dimension
-
-            _, outputs = model(images)
-            loss = criterion(outputs, masks)
-            running_loss += loss.item() * images.size(0)
-
-            # Generate predicted masks
-            # TODO : Shouldn't we apply a softmax here ?
-            preds = (outputs > 0.5).float()
-
-            wandb.log(
-                {"images": [wandb.Image(img, caption="Input Image") for img in images]}
-            )
-            wandb.log(
-                {
-                    "predicted_masks": [
-                        wandb.Image(img, caption="Predicted Mask") for img in preds
-                    ]
-                }
-            )
-            wandb.log(
-                {
-                    "ground_truth_masks": [
-                        wandb.Image(img, caption="Ground Truth Mask") for img in masks
-                    ]
-                }
-            )
-
-            # Compute accuracy, precision, recall, F1-score
-            # Flatten tensors
-            preds_flat = (preds.view(-1) > 0.5).long()
-            masks_flat = (masks.view(-1) > 0.5).long()
-
-            preds_list.append(preds_flat)
-            masks_list.append(masks_flat)
-
-        preds_flat = torch.cat(preds_list)
-        masks_flat = torch.cat(masks_list)
-
-        accuracy = accuracy_score(masks_flat.cpu(), preds_flat.cpu())
-        precision = precision_score(masks_flat.cpu(), preds_flat.cpu())
-        recall = recall_score(masks_flat.cpu(), preds_flat.cpu())
-        f1 = f1_score(masks_flat.cpu(), preds_flat.cpu())
-
-        epoch_loss = running_loss / len(dataloader.dataset)
-
-        wandb.log(
-            {
-                "val_loss": epoch_loss,
-                "val_accuracy": accuracy,
-                "val_precision": precision,
-                "val_recall": recall,
-                "val_f1_score": f1,
-            }
-        )
-
-    return epoch_loss
 
 
 def main():
@@ -133,30 +32,8 @@ def main():
 
     # Create the dataset
     train_dir = "/home/yoann/Desktop/project-2-roadseg_nsy/data/training/"
-    img_dir = os.path.join(train_dir, "images/")
-    mask_dir = os.path.join(train_dir, "groundtruth/")
-
-    all_imgs = sorted(
-        os.path.join(img_dir, f) for f in os.listdir(img_dir) if f.endswith(".png")
-    )
-    all_masks = sorted(
-        os.path.join(mask_dir, f) for f in os.listdir(mask_dir) if f.endswith(".png")
-    )
-
-    all_imgs_train, all_imgs_val, all_masks_train, all_masks_val = train_test_split(
-        all_imgs, all_masks, test_size=0.2, random_state=42
-    )
-
-    print(f"Total number of training samples: {len(all_imgs_train)}")
-    print(f"Total number of validation samples: {len(all_imgs_val)}")
-
-    # Transform for datasets
-    transform = augmented_transform()
-
-    # Create dataset objects
-    train_dataset = RoadSegDataset(all_imgs_train, all_masks_train, transform=transform)
-    val_dataset = RoadSegDataset(
-        all_imgs_val, all_masks_val, transform=default_transform
+    train_dataset, val_dataset = load_train_test(
+        train_dir, train_transform=augmented_transform()
     )
 
     # Collate function to handle batching
@@ -203,24 +80,24 @@ def main():
         project="road-segmentation",
         config={
             "learning_rate": lr,
+            "lr_scheduler": lr_scheduler.__class__.__name__,
+            "optimizer": optimizer.__class__.__name__,
             "weight_decay": weight_decay,
             "epochs": nb_epochs,
-            "batch_size": 16,
+            "batch_size": batch_size,
         },
     )
 
-    for epoch in tqdm(range(nb_epochs), desc="Training Epochs"):
+    progress = tqdm(range(nb_epochs), desc="Training Epochs")
+
+    for epoch in progress:
         train_loss = train_epoch(model, train_loader, optimizer, criterion, device)
+        lr_scheduler.step(train_loss)
+        progress.set_postfix({"train_loss": f"{train_loss:.4f}"})
+        wandb.log({"learning_rate": optimizer.param_groups[0]["lr"]})
 
         if (epoch + 1) % validate_every == 0:
-            val_loss = evaluate_epoch(model, val_loader, criterion, device)
-            lr_scheduler.step(val_loss)
-
-            print(
-                f"Epoch [{epoch+1}/{nb_epochs}], Train Loss: {train_loss:.4f}, Val Loss: {val_loss:.4f}"
-            )
-        else:
-            print(f"Epoch [{epoch+1}/{nb_epochs}], Train Loss: {train_loss:.4f}")
+            evaluate_epoch(model, val_loader, criterion, device)
 
         if (epoch + 1) % checkpoint_every == 0:
             checkpoint_path = os.path.join(checkpoint_dir, f"unet_epoch_{epoch+1}.pth")
