@@ -1,7 +1,10 @@
+from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset
 from PIL import Image
 import albumentations as A
 import numpy as np
+from src.preprocessing.transform import default_transform
+import os
 
 
 class RoadSegDataset(Dataset):
@@ -34,3 +37,37 @@ class RoadSegDataset(Dataset):
             # TODO : How do we make sure both are float tensors?
 
         return image, mask
+
+
+def load_train_test(
+    data_dir: str,
+    train_transform,
+    test_transform=default_transform,
+    test_size: float = 0.2,
+    random_state: int = 42,
+):
+    # Load the paths
+    img_dir = os.path.join(data_dir, "images/")
+    mask_dir = os.path.join(data_dir, "groundtruth/")
+
+    all_imgs = sorted(
+        os.path.join(img_dir, f) for f in os.listdir(img_dir) if f.endswith(".png")
+    )
+    all_masks = sorted(
+        os.path.join(mask_dir, f) for f in os.listdir(mask_dir) if f.endswith(".png")
+    )
+
+    # Split into train and test
+    all_imgs_train, all_imgs_test, all_masks_train, all_masks_test = train_test_split(
+        all_imgs, all_masks, test_size=test_size, random_state=random_state
+    )
+
+    # Create dataset objects
+    train_dataset = RoadSegDataset(
+        all_imgs_train, all_masks_train, transform=train_transform
+    )
+    test_dataset = RoadSegDataset(
+        all_imgs_test, all_masks_test, transform=test_transform
+    )
+
+    return train_dataset, test_dataset
