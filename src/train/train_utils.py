@@ -63,7 +63,9 @@ def evaluate_epoch(model, dataloader, criterion, device, threshold=0.5, log_wand
             masks_flat = (masks.view(-1) > threshold).long()
 
             # Store for overall metrics
-            denormalized_imgs = denormalize_tensor(images.cpu()).clamp(0, 1)
+            denormalized_imgs = denormalize_tensor(images[:, :3, :, :].cpu()).clamp(
+                0, 1
+            )
 
             preds_list.append(preds_flat)
             masks_list.append(masks_flat)
