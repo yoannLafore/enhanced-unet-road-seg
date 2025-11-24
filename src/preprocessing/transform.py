@@ -24,12 +24,13 @@ def augmented_transform(width: int = 400, height: int = 400) -> A.Compose:
     )
 
 
-default_transform = A.Compose(
-    [
-        A.Normalize(mean=DATASET_MEAN, std=DATASET_STD),
-        A.ToTensorV2(),
-    ]
-)
+def default_transform() -> A.Compose:
+    return A.Compose(
+        [
+            A.Normalize(mean=DATASET_MEAN, std=DATASET_STD),
+            A.ToTensorV2(),
+        ]
+    )
 
 
 def denormalize_tensor(tensor: torch.Tensor) -> torch.Tensor:
