@@ -39,14 +39,7 @@ class RoadSegDataset(Dataset):
         return image, mask
 
 
-def load_train_test(
-    data_dir: str,
-    train_transform,
-    test_transform=default_transform,
-    test_size: float = 0.2,
-    random_state: int = 42,
-):
-    # Load the paths
+def _load_image_paths(data_dir: str):
     img_dir = os.path.join(data_dir, "images/")
     mask_dir = os.path.join(data_dir, "groundtruth/")
 
@@ -56,6 +49,18 @@ def load_train_test(
     all_masks = sorted(
         os.path.join(mask_dir, f) for f in os.listdir(mask_dir) if f.endswith(".png")
     )
+
+    return all_imgs, all_masks
+
+
+def load_train_test(
+    data_dir: str,
+    train_transform,
+    test_transform=default_transform,
+    test_size: float = 0.2,
+    random_state: int = 42,
+):
+    all_imgs, all_masks = _load_image_paths(data_dir)
 
     # Split into train and test
     all_imgs_train, all_imgs_test, all_masks_train, all_masks_test = train_test_split(
@@ -71,3 +76,41 @@ def load_train_test(
     )
 
     return train_dataset, test_dataset
+
+
+def load_k_fold_datasets(
+    data_dir: str,
+    train_transform,
+    test_transform=default_transform,
+    k: int = 5,
+    random_state: int = 42,
+):
+    all_imgs, all_masks = _load_image_paths(data_dir)
+
+    # Shuffle data
+    permutation = np.random.RandomState(seed=random_state).permutation(len(all_imgs))
+    all_imgs = [all_imgs[i] for i in permutation]
+    all_masks = [all_masks[i] for i in permutation]
+
+    # Create folds
+    fold_size = len(all_imgs) // k
+    datasets = []
+
+    for fold in range(k):
+        start_idx = fold * fold_size
+        end_idx = (fold + 1) * fold_size if fold != k - 1 else len(all_imgs)
+
+        val_imgs = all_imgs[start_idx:end_idx]
+        val_masks = all_masks[start_idx:end_idx]
+
+        train_imgs = all_imgs[:start_idx] + all_imgs[end_idx:]
+        train_masks = all_masks[:start_idx] + all_masks[end_idx:]
+
+        train_dataset = RoadSegDataset(
+            train_imgs, train_masks, transform=train_transform
+        )
+        val_dataset = RoadSegDataset(val_imgs, val_masks, transform=test_transform)
+
+        datasets.append((train_dataset, val_dataset))
+
+    return datasets
