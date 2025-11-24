@@ -1,12 +1,11 @@
-from src.preprocessing.transform import augmented_transform, default_transform
 from src.model.unet import *
 from src.preprocessing.dataset import *
 import os
-from sklearn.model_selection import train_test_split
 import torch
 from tqdm import tqdm
 import wandb
-
+from src.utils import *
+import json
 
 from src.train.train_utils import evaluate_epoch, train_epoch
 
@@ -21,97 +20,119 @@ from src.train.train_utils import evaluate_epoch, train_epoch
 # TODO: For now we use cross entropy with loagits, but the mask values are 0 and 1, might be better to apply a sigmoid first and use BCE loss ?
 
 
-def main():
-    # Create checkpoint directory
-    checkpoint_dir = "./checkpoints/"
-    os.makedirs(checkpoint_dir, exist_ok=True)
+def append_val_json(file_path: str, data: dict):
+    """Append validation data to a JSON file.
 
-    # Set device
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Using device: {device}")
+    Args:
+        file_path (str): Path to the JSON file.
+        data (dict): Data to append.
+    """
+    if os.path.exists(file_path):
+        existing_data = json.load(open(file_path))
+    else:
+        existing_data = []
 
-    # Create the dataset
-    train_dir = "/home/yoann/Desktop/project-2-roadseg_nsy/data/training/"
-    train_dataset, val_dataset = load_train_test(
-        train_dir, train_transform=augmented_transform()
-    )
+    existing_data.append(data)
+    json.dump(existing_data, open(file_path, "w"), indent=4)
 
-    # Collate function to handle batching
-    def collate_fn(batch):
-        images = torch.stack([item[0] for item in batch])
-        masks = torch.stack([item[1] for item in batch])
-        return images, masks
 
-    batch_size = 8
+def train_model_on_ds(train_ds, test_ds, cfg):
+    print(f"Using out dir: {cfg.train.out_dir}")
+
+    train_cfg = cfg.train
+    device = cfg.device
+
+    model_cfg = cfg.model
+    model = build_from_cfg(model_cfg).to(device)
+
+    collate_fn = build_from_cfg(cfg.train.collate_fn)
+    batch_size = int(train_cfg.batch_size)
 
     train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=batch_size, shuffle=True, collate_fn=collate_fn
+        train_ds,
+        batch_size=batch_size,
+        shuffle=True,
+        collate_fn=collate_fn,
+        pin_memory=True,
+        num_workers=4,
     )
+
     val_loader = torch.utils.data.DataLoader(
-        val_dataset, batch_size=batch_size, shuffle=False, collate_fn=collate_fn
+        test_ds,
+        batch_size=batch_size,
+        shuffle=False,
+        collate_fn=collate_fn,
+        pin_memory=True,
+        num_workers=4,
     )
 
-    # Init the model
-    model = Unet().to(device)
+    # Make sure output directory exists
+    out_dir = train_cfg.out_dir
+    checkpoint_dir = os.path.join(out_dir, "checkpoints/")
+    validation_file = os.path.join(out_dir, "validation.json")
+    final_stats_file = os.path.join(out_dir, "final_stats.json")
+    os.makedirs(out_dir, exist_ok=True)
+    os.makedirs(checkpoint_dir, exist_ok=True)
 
-    lr = 1e-4
-    weight_decay = 1e-3
+    # Save config file
+    dump_cfg(cfg, os.path.join(out_dir, "config.yaml"))
 
-    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
+    log_wandb = bool(train_cfg.log_wandb)
+    nb_epochs = int(train_cfg.epochs)
+    validate_every = int(train_cfg.validate_every)
+    checkpoint_every = int(train_cfg.checkpoint_every)
 
-    nb_epochs = 100
-    steps_per_epochs = len(train_loader)
-    total_steps = nb_epochs * steps_per_epochs
-    validate_every = 5
-    checkpoint_every = 10
+    optimizer = build_from_cfg(train_cfg.optimizer, params=model.parameters())
+    lr_scheduler = build_from_cfg(train_cfg.lr_scheduler, optimizer=optimizer)
+    criterion = build_from_cfg(train_cfg.criterion)
 
-    lr_scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        optimizer,
-        mode="min",
-        factor=0.5,
-        patience=5,
-        min_lr=1e-6,
-    )
-
-    # TODO: Are we really working with logits here ... ?
-    criterion = nn.BCELoss()
-
-    wandb.init(
-        project="road-segmentation",
-        config={
-            "learning_rate": lr,
-            "lr_scheduler": lr_scheduler.__class__.__name__,
-            "optimizer": optimizer.__class__.__name__,
-            "weight_decay": weight_decay,
-            "epochs": nb_epochs,
-            "batch_size": batch_size,
-        },
-    )
+    if log_wandb:
+        wandb.init(
+            project="road-segmentation",
+            config=OmegaConf.to_container(cfg, resolve=True),
+        )
 
     progress = tqdm(range(nb_epochs), desc="Training Epochs")
 
     for epoch in progress:
-        train_loss = train_epoch(model, train_loader, optimizer, criterion, device)
-        lr_scheduler.step(train_loss)
+        train_loss = train_epoch(
+            model, train_loader, optimizer, criterion, device, log_wandb
+        )
+        if isinstance(lr_scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
+            lr_scheduler.step(train_loss)
+        else:
+            lr_scheduler.step()
         progress.set_postfix({"train_loss": f"{train_loss:.4f}"})
-        wandb.log({"learning_rate": optimizer.param_groups[0]["lr"]})
+
+        if log_wandb:
+            wandb.log({"learning_rate": optimizer.param_groups[0]["lr"]})
 
         if (epoch + 1) % validate_every == 0:
-            evaluate_epoch(model, val_loader, criterion, device)
+            val_stats = evaluate_epoch(
+                model, val_loader, criterion, device, log_wandb=log_wandb
+            )
+            val_stats["epoch"] = epoch + 1
+            # Save validation stats
+            append_val_json(validation_file, val_stats)
 
         if (epoch + 1) % checkpoint_every == 0:
             checkpoint_path = os.path.join(checkpoint_dir, f"unet_epoch_{epoch+1}.pth")
             torch.save(model.state_dict(), checkpoint_path)
-            print(f"Saved checkpoint: {checkpoint_path}")
+
+    # Evaluate one last time on validation set
+    final_stats = evaluate_epoch(
+        model, val_loader, criterion, device, log_wandb=log_wandb
+    )
+    # Save final stats
+    json.dump(final_stats, open(final_stats_file, "w"), indent=4)
+
+    if log_wandb:
+        wandb.finish()
 
     # Save final model
-    final_model_path = os.path.join(checkpoint_dir, "unet_final.pth")
+    final_model_path = os.path.join(out_dir, "final_model.pth")
     torch.save(model.state_dict(), final_model_path)
+
     print(f"Saved final model: {final_model_path}")
 
-    return
-
-
-if __name__ == "__main__":
-
-    main()
+    return final_stats
