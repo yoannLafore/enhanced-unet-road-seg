@@ -1,0 +1,28 @@
+# Core array & math
+numpy
+scipy
+scikit-learn
+
+# Computer vision & data augmentation
+albumentations
+opencv-python-headless
+Pillow
+
+# Plotting
+matplotlib
+
+# Deep learning frameworks
+torch
+torchvision
+tensorflow
+keras
+
+# Utilities
+tqdm
+PyYAML
+requests
+rich
+GitPython
+fsspec
+wandb
+absl-py
