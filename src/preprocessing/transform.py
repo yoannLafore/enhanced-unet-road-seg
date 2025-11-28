@@ -1,5 +1,6 @@
 import albumentations as A
 import torch
+import cv2
 
 DATASET_MEAN = (0.33298134, 0.33009373, 0.29579783)
 DATASET_STD = (0.18409964, 0.17780256, 0.17631003)
@@ -20,7 +21,8 @@ def augmented_transform(width: int = 400, height: int = 400) -> A.Compose:
             A.ShiftScaleRotate(
                 shift_limit=0.03,
                 scale_limit=0.05,
-                rotate_limit=45,
+                rotate_limit=30,
+                border_mode=cv2.BORDER_REFLECT_101,
                 p=0.7,
             ),
             A.RandomBrightnessContrast(
@@ -35,6 +37,8 @@ def augmented_transform(width: int = 400, height: int = 400) -> A.Compose:
                 p=0.5,
             ),
             A.GaussNoise(p=0.3),
+            A.MotionBlur(blur_limit=3, p=0.2),
+            A.ImageCompression(quality_lower=70, quality_upper=100, p=0.3),
             A.Normalize(mean=DATASET_MEAN, std=DATASET_STD),
             A.ToTensorV2(),
         ]
