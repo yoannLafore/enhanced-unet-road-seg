@@ -136,3 +136,37 @@ def train_model_on_ds(train_ds, test_ds, cfg):
     print(f"Saved final model: {final_model_path}")
 
     return final_stats
+
+
+def train_from_cfg(cfg):
+    random_state = cfg.random_state
+
+    # Create the dataset
+    train_transform_cfg = cfg.train.transform
+    test_transform_cfg = cfg.test.transform
+
+    train_transform = build_from_cfg(train_transform_cfg)
+    test_transform = build_from_cfg(test_transform_cfg)
+
+    train_out_dir = cfg.train.out_dir
+    train_run_name = cfg.train.run_name
+
+    if train_run_name is not None and cfg.train.make_unique_name:
+        train_run_name += "_" + get_time_str()
+        train_out_dir = os.path.join(train_out_dir, train_run_name)
+
+    # Make sure output directory exists
+    os.makedirs(train_out_dir, exist_ok=True)
+    # Update the out_dir in cfg
+    cfg.train.out_dir = train_out_dir
+
+    # Run the training
+    train_ds, test_ds = load_train_test(
+        cfg.data.train_dir,
+        train_transform,
+        test_transform,
+        test_size=cfg.data.test_size,
+        random_state=random_state,
+    )
+
+    train_model_on_ds(train_ds, test_ds, cfg)

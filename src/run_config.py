@@ -1,6 +1,7 @@
 import argparse
 from src.utils import *
 from src.train.kfolds import perform_kfolds
+from src.train.unet_train import train_from_cfg
 
 
 def parse_args():
@@ -28,7 +29,7 @@ def main():
 
     if task_type == "train":
         # Perform training
-        raise NotImplementedError("Training task not implemented in this script.")
+        train_from_cfg(cfg)
     elif task_type == "kfold":
         # Perform k-fold cross-validation
         perform_kfolds(cfg)
