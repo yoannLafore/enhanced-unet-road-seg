@@ -4,6 +4,7 @@ device: cuda
 
 data:
   train_dir: /home/yoann/Desktop/project-2-roadseg_nsy/data/training/
+  test_size: 0.2
 
 
 model:

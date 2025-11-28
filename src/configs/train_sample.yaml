@@ -1,16 +1,12 @@
 
-task_type: kfold
-
-kfold:
-  k: 5
-  out_dir: out/kfolds/
-  run_name: test_run
-  make_unique_name: true
+task_type: train
 
 
 train:
-  out_dir: None # Will be set by kfolds
-  log_wandb: true
+  out_dir: out/train/
+  run_name: sample_run
+  make_unique_name: true
+  log_wandb: True
   epochs: 200
   batch_size: 8
   validate_every: 5
@@ -22,14 +18,14 @@ train:
       lr: 0.0001
 
   lr_scheduler:
-    class_path: torch.optim.lr_scheduler.ReduceLROnPlateau
+    class_path: torch.optim.lr_scheduler.CosineAnnealingLR
     args:
-      mode: min
-      factor: 0.5
-      patience: 5
+      T_max: 200
+      eta_min: 5.0e-05
+      last_epoch: -1
 
   criterion:
-    class_path: torch.nn.BCELoss
+    class_path: src.train.loss.get_bce_with_logits_loss
     args: {}
 
 
@@ -42,6 +38,7 @@ train:
   collate_fn:
     class_path: src.train.collate_fn.get_base_collate_fn
     args: {}
+
 
 
 
