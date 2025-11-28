@@ -10,7 +10,9 @@ from src.preprocessing.transform import denormalize_tensor
 
 
 # Train the basic model for one epoch
-def train_epoch(model, dataloader, optimizer, criterion, device, log_wandb=True):
+def train_epoch(
+    model, dataloader, optimizer, criterion, device, log_wandb=True, use_preds=False
+):
     model.train()
     running_loss = 0.0
 
@@ -21,10 +23,13 @@ def train_epoch(model, dataloader, optimizer, criterion, device, log_wandb=True)
         optimizer.zero_grad()
 
         # Forward pass
-        _, outputs = model(images)
+        logits, preds = model(images)
 
         # Compute loss and backpropagate
-        loss = criterion(outputs, masks)
+        if use_preds:
+            loss = criterion(preds, masks)
+        else:
+            loss = criterion(logits, masks)
         loss.backward()
         optimizer.step()
 
