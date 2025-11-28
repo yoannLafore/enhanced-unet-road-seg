@@ -9,15 +9,32 @@ def augmented_transform(width: int = 400, height: int = 400) -> A.Compose:
     return A.Compose(
         [
             A.RandomResizedCrop(
-                size=(width, height), scale=(0.7, 1.0), ratio=(0.9, 1.1), p=1.0
+                size=(height, width),
+                scale=(0.8, 1.0),
+                ratio=(0.9, 1.1),
+                p=0.7,
             ),
             A.HorizontalFlip(p=0.5),
             A.VerticalFlip(p=0.5),
             A.RandomRotate90(p=0.5),
             A.ShiftScaleRotate(
-                shift_limit=0.05, scale_limit=0.1, rotate_limit=180, p=0.9
+                shift_limit=0.03,
+                scale_limit=0.05,
+                rotate_limit=45,
+                p=0.7,
             ),
-            A.RandomBrightnessContrast(p=0.8),
+            A.RandomBrightnessContrast(
+                brightness_limit=0.2,
+                contrast_limit=0.2,
+                p=0.8,
+            ),
+            A.HueSaturationValue(
+                hue_shift_limit=5,
+                sat_shift_limit=15,
+                val_shift_limit=10,
+                p=0.5,
+            ),
+            A.GaussNoise(p=0.3),
             A.Normalize(mean=DATASET_MEAN, std=DATASET_STD),
             A.ToTensorV2(),
         ]
