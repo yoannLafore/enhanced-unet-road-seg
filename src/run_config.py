@@ -27,7 +27,7 @@ def main():
 
     task_type = cfg.task_type.lower()
 
-    if task_type == "train":
+    if task_type == "train" or task_type == "improve_model":
         # Perform training
         train_from_cfg(cfg)
     elif task_type == "kfold":
