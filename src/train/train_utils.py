@@ -168,3 +168,44 @@ def train_epoch_improve_module_sep(
     epoch_loss_improved = running_loss_improved / len(dataloader.dataset)
 
     return epoch_loss_base, epoch_loss_improved
+
+
+def train_epoch_improve_module_joint(
+    base_model,
+    improvement_model,
+    optimizer,
+    dataloader,
+    criterion,
+    device,
+    log_wandb=True,
+):
+    base_model.train()
+    improvement_model.train()
+
+    running_loss = 0.0
+
+    for images, labels in dataloader:
+        images, masks = images.to(device), labels.to(device)
+
+        optimizer.zero_grad()
+
+        base_logits, base_preds = base_model(images)
+        improved_logits, improved_preds = improvement_model(base_preds)
+
+        # Compute losses
+        loss = criterion(improved_logits, masks)
+
+        # Back propagate
+        loss.backward()
+
+        # Step
+        optimizer.step()
+
+        running_loss += loss.item() * images.size(0)
+
+        if log_wandb:
+            wandb.log({"loss": loss.item()})
+
+    epoch_loss = running_loss / len(dataloader.dataset)
+
+    return epoch_loss
