@@ -259,3 +259,49 @@ def train_epoch_improve_module_joint(
     epoch_loss = running_loss / len(dataloader.dataset)
 
     return epoch_loss
+
+
+def evaluate_epoch_improve_module(
+    base_model,
+    improvement_model,
+    dataloader,
+    criterion,
+    device,
+    threshold=0.5,
+    log_wandb=True,
+):
+    base_model.eval()
+    improvement_model.eval()
+
+    def pred_improved_get_fn(images):
+        base_logits, base_preds = base_model(images)
+        improved_logits, improved_preds = improvement_model(base_preds)
+        return improved_preds
+
+    def base_pred_get_fn(images):
+        base_logits, base_preds = base_model(images)
+        return base_preds
+
+    stats_base = _evaluate_epoch(
+        base_pred_get_fn,
+        dataloader,
+        criterion,
+        device,
+        threshold,
+        log_wandb,
+        "base_",
+        ["images", "ground_truth_masks"],
+    )
+
+    stats_improved = _evaluate_epoch(
+        pred_improved_get_fn,
+        dataloader,
+        criterion,
+        device,
+        threshold,
+        log_wandb,
+        "improved_",
+        None,
+    )
+
+    return stats_base, stats_improved
