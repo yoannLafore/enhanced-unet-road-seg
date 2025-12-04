@@ -147,7 +147,7 @@ def train_improve_model_on_ds(train_ds, test_ds, cfg):
     base_model_cfg = cfg.base_model
     base_model = build_from_cfg(base_model_cfg).to(device)
 
-    improved_model_cfg = cfg.improvement_model
+    improved_model_cfg = cfg.improved_model
     improved_model = build_from_cfg(improved_model_cfg).to(device)
 
     collate_fn = build_from_cfg(cfg.train.collate_fn)
@@ -265,14 +265,22 @@ def train_improve_model_on_ds(train_ds, test_ds, cfg):
             )
 
         if log_wandb:
-            wandb.log({"learning_rate": optimizer.param_groups[0]["lr"]})
+            if train_jointly:
+                wandb.log({"learning_rate": optimizer.param_groups[0]["lr"]})
+            else:
+                wandb.log({"base_learning_rate": base_optimizer.param_groups[0]["lr"]})
+                wandb.log(
+                    {"improved_learning_rate": improved_optimizer.param_groups[0]["lr"]}
+                )
 
         if (epoch + 1) % validate_every == 0:
+            val_criterion = criterion if train_jointly else improved_criterion
+
             val_stats_base, val_stats_improved = evaluate_epoch_improve_module(
                 base_model,
                 improved_model,
                 val_loader,
-                criterion,
+                val_criterion,
                 device,
                 log_wandb=log_wandb,
             )
@@ -292,11 +300,12 @@ def train_improve_model_on_ds(train_ds, test_ds, cfg):
             torch.save(improved_model.state_dict(), improved_checkpoint_path)
 
     # Evaluate one last time on validation set
+    val_criterion = criterion if train_jointly else improved_criterion
     _, final_stats = evaluate_epoch_improve_module(
         base_model,
         improved_model,
         val_loader,
-        criterion,
+        val_criterion,
         device,
         log_wandb=log_wandb,
     )
@@ -350,4 +359,7 @@ def train_from_cfg(cfg):
         random_state=random_state,
     )
 
-    train_model_on_ds(train_ds, test_ds, cfg)
+    if cfg.task_type == "improve_model":
+        return train_improve_model_on_ds(train_ds, test_ds, cfg)
+    else:
+        return train_model_on_ds(train_ds, test_ds, cfg)
