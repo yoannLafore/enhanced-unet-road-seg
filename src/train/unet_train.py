@@ -359,7 +359,9 @@ def train_from_cfg(cfg):
         random_state=random_state,
     )
 
-    if cfg.task_type == "improve_model":
+    train_type = cfg.train.get("type", "standard")
+
+    if train_type == "improve":
         return train_improve_model_on_ds(train_ds, test_ds, cfg)
     else:
         return train_model_on_ds(train_ds, test_ds, cfg)

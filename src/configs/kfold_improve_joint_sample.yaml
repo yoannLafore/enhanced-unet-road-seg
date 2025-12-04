@@ -1,15 +1,14 @@
-task_type: improve_model
+task_type: kfold
 
 kfold:
   k: 5
   out_dir: out/kfolds/
-  run_name: baseline_bis
+  run_name: improve_joint
   make_unique_name: true
 
 train:
-  out_dir: out/train/
+  type: improve
   run_name: None # Will be set by kfolds
-  make_unique_name: true
   log_wandb: True
   epochs: 200
   batch_size: 4

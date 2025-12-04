@@ -1,8 +1,9 @@
 
-task_type: improve_model
+task_type: train
 
 
 train:
+  type: improve
   out_dir: out/train/
   run_name: improve_joint
   make_unique_name: true

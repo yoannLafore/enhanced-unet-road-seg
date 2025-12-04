@@ -3,7 +3,7 @@ from src.model.unet import *
 from src.preprocessing.dataset import *
 from src.utils import *
 import os
-from src.train.unet_train import train_model_on_ds
+from src.train.unet_train import train_model_on_ds, train_improve_model_on_ds
 import pandas as pd
 
 
@@ -37,13 +37,18 @@ def perform_kfolds(cfg: dict):
 
     fold_run_names = ["fold_" + str(i + 1) for i in range(k)]
 
+    train_type = cfg.train.get("type", "standard")
+
     for i, (train_fold, test_fold) in enumerate(kfold):
         print(f"Training fold {i+1}/{k}...")
 
         cfg.train.run_name = fold_run_names[i]
         cfg.train.out_dir = os.path.join(out_dir, fold_run_names[i])
 
-        train_model_on_ds(train_fold, test_fold, cfg)
+        if train_type == "improve":
+            train_improve_model_on_ds(train_fold, test_fold, cfg)
+        else:
+            train_model_on_ds(train_fold, test_fold, cfg)
 
     # Compute final statistics across folds
     raw_final_stats = []

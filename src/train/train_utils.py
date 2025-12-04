@@ -300,7 +300,7 @@ def evaluate_epoch_improve_module(
         device,
         threshold,
         log_wandb,
-        "improved_",
+        "",
         None,
     )
 
