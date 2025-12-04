@@ -43,10 +43,18 @@ def train_epoch(
     return epoch_loss
 
 
-def evaluate_epoch(model, dataloader, criterion, device, threshold=0.5, log_wandb=True):
+def _evaluate_epoch(
+    pred_get_fn,
+    dataloader,
+    criterion,
+    device,
+    threshold=0.5,
+    log_wandb=True,
+    prefix="",
+    log_blacklist=None,
+):
     # Compute accuracy, precision, recall, F1-score on validation set
     # Also generate the mask, compare them to ground truth and save to wandb
-    model.eval()
     running_loss = 0.0
 
     with torch.no_grad():
@@ -58,12 +66,11 @@ def evaluate_epoch(model, dataloader, criterion, device, threshold=0.5, log_wand
             images = images.to(device)
             masks = masks.to(device)
 
-            _, outputs = model(images)
+            outputs = pred_get_fn(images)
             loss = criterion(outputs, masks)
             running_loss += loss.item() * images.size(0)
 
             # Compute accuracy, precision, recall, F1-score
-            # Flatten tensors
             preds_flat = (outputs.view(-1) > threshold).long()
             masks_flat = (masks.view(-1) > threshold).long()
 
@@ -94,27 +101,70 @@ def evaluate_epoch(model, dataloader, criterion, device, threshold=0.5, log_wand
         epoch_loss = running_loss / len(dataloader.dataset)
 
         stats = {
-            "val_loss": epoch_loss,
-            "val_accuracy": accuracy,
-            "val_precision": precision,
-            "val_recall": recall,
-            "val_f1_score": f1,
+            prefix + "val_loss": epoch_loss,
+            prefix + "val_accuracy": accuracy,
+            prefix + "val_precision": precision,
+            prefix + "val_recall": recall,
+            prefix + "val_f1_score": f1,
         }
 
         # Log to wandb
         if log_wandb:
+            if log_blacklist is not None:
+                for key in log_blacklist:
+                    if key in stats:
+                        del stats[key]
+
             wandb.log(stats)
-            wandb.log(
-                {
-                    "images": [wandb.Image(img, caption="Input Image") for img in imgs],
-                    "predicted_masks": [
-                        wandb.Image(img, caption="Predicted Mask") for img in preds
-                    ],
-                    "ground_truth_masks": [
-                        wandb.Image(img, caption="Ground Truth Mask") for img in masks
-                    ],
-                }
-            )
+
+            if log_blacklist is None or "images" not in log_blacklist:
+                wandb.log(
+                    {
+                        prefix
+                        + "images": [
+                            wandb.Image(img, caption="Input Image") for img in imgs
+                        ],
+                    }
+                )
+
+            if log_blacklist is None or "predicted_masks" not in log_blacklist:
+                wandb.log(
+                    {
+                        prefix
+                        + "predicted_masks": [
+                            wandb.Image(img, caption="Predicted Mask") for img in preds
+                        ],
+                    }
+                )
+            if log_blacklist is None or "ground_truth_masks" not in log_blacklist:
+                wandb.log(
+                    {
+                        prefix
+                        + "ground_truth_masks": [
+                            wandb.Image(img, caption="Ground Truth Mask")
+                            for img in masks
+                        ],
+                    }
+                )
+
+    return stats
+
+
+def evaluate_epoch(model, dataloader, criterion, device, threshold=0.5, log_wandb=True):
+    model.eval()
+
+    def pred_get_fn(images):
+        logits, preds = model(images)
+        return preds
+
+    stats = _evaluate_epoch(
+        pred_get_fn,
+        dataloader,
+        criterion,
+        device,
+        threshold,
+        log_wandb,
+    )
 
     return stats
 
