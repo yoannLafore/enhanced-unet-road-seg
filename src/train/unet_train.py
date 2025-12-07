@@ -7,17 +7,8 @@ import wandb
 from src.utils import *
 import json
 
-from src.train.train_utils import *
-
-# TODO :
-# - Why are the validation metrics doing zigzag ?
-# - Do we apply softmax and stuff,
-# - Do a correct float tensor conversion in dataset
-# - Try with other losses (Dice, Focal ... )
-# - Finetune threshold
-# - LR scheduler : Try CosineAnnealing with warm restarts
-# TODO: VERY IMPORTANT : COMPUTE VALIDATION METRICS OVER THE FULL DATASET not per BATCH !!!
-# TODO: For now we use cross entropy with loagits, but the mask values are 0 and 1, might be better to apply a sigmoid first and use BCE loss ?
+from src.train.train_epoch import *
+from src.train.eval_epoch import *
 
 
 def append_val_json(file_path: str, data: dict):
