@@ -141,11 +141,24 @@ class Unet(nn.Module):
         return logits, preds
 
 
-class ResNet50Unet(nn.Module):
-    def __init__(self, *args, **kwargs):
+class ResNetUnet(nn.Module):
+    def __init__(self, backbone="resnet50", weights=None, *args, **kwargs):
         super().__init__()
 
-        resnet = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1)
+        if backbone == "resnet18":
+            resnet = models.resnet18(weights=weights)
+            enc_channels = [64, 64, 128, 256, 512]
+        elif backbone == "resnet34":
+            resnet = models.resnet34(weights=weights)
+            enc_channels = [64, 64, 128, 256, 512]
+        elif backbone == "resnet50":
+            resnet = models.resnet50(weights=weights)
+            enc_channels = [64, 256, 512, 1024, 2048]
+        elif backbone == "resnet101":
+            resnet = models.resnet101(weights=weights)
+            enc_channels = [64, 256, 512, 1024, 2048]
+        else:
+            raise ValueError(f"Unsupported backbone '{backbone}'")
 
         # Encoder
         self.enc0 = nn.Sequential(
@@ -162,12 +175,20 @@ class ResNet50Unet(nn.Module):
         self.enc4 = resnet.layer4
 
         # Decoder
-        self.dec4 = Decoder(2048, 1024, 1024, 1024)
-        self.dec3 = Decoder(1024, 512, 512, 512)
-        self.dec2 = Decoder(512, 256, 256, 256)
-        self.dec1 = Decoder(256, 64, 64, 64)
+        self.dec4 = Decoder(
+            enc_channels[4], enc_channels[3], enc_channels[3], enc_channels[3]
+        )
+        self.dec3 = Decoder(
+            enc_channels[3], enc_channels[2], enc_channels[2], enc_channels[2]
+        )
+        self.dec2 = Decoder(
+            enc_channels[2], enc_channels[1], enc_channels[1], enc_channels[1]
+        )
+        self.dec1 = Decoder(
+            enc_channels[1], enc_channels[0], enc_channels[0], enc_channels[0]
+        )
 
-        self.conv_map = nn.Conv2d(64, 1, 1)
+        self.conv_map = nn.Conv2d(enc_channels[0], 1, 1)
 
     def forward(self, x):
 
@@ -195,3 +216,59 @@ class ResNet50Unet(nn.Module):
         preds = torch.sigmoid(logits)
 
         return logits, preds
+
+
+class ResNet18Unet(nn.Module):
+    def __init__(self, pretrained=False, *args, **kwargs):
+        super().__init__()
+        self.unet = ResNetUnet(
+            backbone="resnet18",
+            weights=models.ResNet18_Weights.IMAGENET1K_V1 if pretrained else None,
+            *args,
+            **kwargs,
+        )
+
+    def forward(self, x):
+        return self.unet(x)
+
+
+class ResNet34Unet(nn.Module):
+    def __init__(self, pretrained=False, *args, **kwargs):
+        super().__init__()
+        self.unet = ResNetUnet(
+            backbone="resnet34",
+            weights=models.ResNet34_Weights.IMAGENET1K_V1 if pretrained else None,
+            *args,
+            **kwargs,
+        )
+
+    def forward(self, x):
+        return self.unet(x)
+
+
+class ResNet50Unet(nn.Module):
+    def __init__(self, pretrained=False, *args, **kwargs):
+        super().__init__()
+        self.unet = ResNetUnet(
+            backbone="resnet50",
+            weights=models.ResNet50_Weights.IMAGENET1K_V1 if pretrained else None,
+            *args,
+            **kwargs,
+        )
+
+    def forward(self, x):
+        return self.unet(x)
+
+
+class ResNet101Unet(nn.Module):
+    def __init__(self, pretrained=False, *args, **kwargs):
+        super().__init__()
+        self.unet = ResNetUnet(
+            backbone="resnet101",
+            weights=models.ResNet101_Weights.IMAGENET1K_V1 if pretrained else None,
+            *args,
+            **kwargs,
+        )
+
+    def forward(self, x):
+        return self.unet(x)
