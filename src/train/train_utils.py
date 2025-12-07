@@ -179,6 +179,7 @@ def train_epoch_improve_module_sep(
     improvement_criterion,
     device,
     log_wandb=True,
+    forward_features=False,
 ):
     base_model.train()
     improvement_model.train()
@@ -192,9 +193,18 @@ def train_epoch_improve_module_sep(
         base_opt.zero_grad()
         improvement_opt.zero_grad()
 
-        base_logits, base_preds = base_model(images)
-        # /!\ Use detached predictions as input to improvement model
-        improved_logits, improved_preds = improvement_model(base_preds.detach())
+        if forward_features:
+            base_logits, base_preds, features = base_model(images, get_features=True)
+
+            # Use features as additional input to improvement model
+            improvement_model_input = torch.cat(
+                [base_preds.detach(), features.detach()], dim=1
+            )
+            improved_logits, improved_preds = improvement_model(improvement_model_input)
+        else:
+            base_logits, base_preds = base_model(images)
+            # /!\ Use detached predictions as input to improvement model
+            improved_logits, improved_preds = improvement_model(base_preds.detach())
 
         # Compute losses
         loss_base = base_criterion(base_logits, masks)
@@ -228,6 +238,7 @@ def train_epoch_improve_module_joint(
     criterion,
     device,
     log_wandb=True,
+    forward_features=False,
 ):
     base_model.train()
     improvement_model.train()
@@ -239,8 +250,15 @@ def train_epoch_improve_module_joint(
 
         optimizer.zero_grad()
 
-        base_logits, base_preds = base_model(images)
-        improved_logits, improved_preds = improvement_model(base_preds)
+        if forward_features:
+            base_logits, base_preds, features = base_model(images, get_features=True)
+
+            # Use features as additional input to improvement model
+            improvement_model_input = torch.cat([base_preds, features], dim=1)
+            improved_logits, improved_preds = improvement_model(improvement_model_input)
+        else:
+            base_logits, base_preds = base_model(images)
+            improved_logits, improved_preds = improvement_model(base_preds)
 
         # Compute losses
         loss = criterion(improved_logits, masks)
@@ -269,14 +287,23 @@ def evaluate_epoch_improve_module(
     device,
     threshold=0.5,
     log_wandb=True,
+    forward_features=False,
 ):
     base_model.eval()
     improvement_model.eval()
 
     def pred_improved_get_fn(images):
-        base_logits, base_preds = base_model(images)
-        improved_logits, improved_preds = improvement_model(base_preds)
-        return improved_preds
+        if forward_features:
+            base_logits, base_preds, features = base_model(images, get_features=True)
+
+            # Use features as additional input to improvement model
+            improvement_model_input = torch.cat([base_preds, features], dim=1)
+            improved_logits, improved_preds = improvement_model(improvement_model_input)
+            return improved_preds
+        else:
+            base_logits, base_preds = base_model(images)
+            improved_logits, improved_preds = improvement_model(base_preds)
+            return improved_preds
 
     def base_pred_get_fn(images):
         base_logits, base_preds = base_model(images)

@@ -172,6 +172,7 @@ def train_improve_model_on_ds(train_ds, test_ds, cfg):
     )
 
     train_jointly = bool(train_cfg.train_jointly)
+    forward_features = bool(train_cfg.get("forward_features", False))
 
     # Make sure output directory exists
     out_dir = train_cfg.out_dir
@@ -228,6 +229,7 @@ def train_improve_model_on_ds(train_ds, test_ds, cfg):
                 criterion,
                 device,
                 log_wandb=log_wandb,
+                forward_features=forward_features,
             )
             if isinstance(lr_scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
                 lr_scheduler.step(train_loss)
@@ -245,6 +247,7 @@ def train_improve_model_on_ds(train_ds, test_ds, cfg):
                 improved_criterion,
                 device,
                 log_wandb=log_wandb,
+                forward_features=forward_features,
             )
             if isinstance(
                 base_lr_scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau
@@ -283,6 +286,7 @@ def train_improve_model_on_ds(train_ds, test_ds, cfg):
                 val_criterion,
                 device,
                 log_wandb=log_wandb,
+                forward_features=forward_features,
             )
 
             val_stats_improved["epoch"] = epoch + 1
@@ -308,6 +312,7 @@ def train_improve_model_on_ds(train_ds, test_ds, cfg):
         val_criterion,
         device,
         log_wandb=log_wandb,
+        forward_features=forward_features,
     )
     # Save final stats
     json.dump(final_stats, open(final_stats_file, "w"), indent=4)
