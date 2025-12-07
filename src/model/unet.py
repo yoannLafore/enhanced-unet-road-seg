@@ -82,6 +82,13 @@ class Decoder(nn.Module):
 
     def forward(self, x, skip):
         x = self.up(x)
+
+        # Interpolate in case of different sizes due
+        if x.shape[2:] != skip.shape[2:]:
+            x = F.interpolate(
+                x, size=skip.shape[2:], mode="bilinear", align_corners=False
+            )
+
         x = torch.concat([skip, x], dim=1)
 
         return self.conv(x)
@@ -108,7 +115,7 @@ class Unet(nn.Module):
 
         self.conv_map = nn.Conv2d(64, out_channels, 1)
 
-    def forward(self, x):
+    def forward(self, x, get_features=False):
         enc1_out, skip_enc1 = self.enc1(x)
         enc2_out, skip_enc2 = self.enc2(enc1_out)
         enc3_out, skip_enc3 = self.enc3(enc2_out)
@@ -121,10 +128,13 @@ class Unet(nn.Module):
         x = self.dec1(x, skip_enc4)
         x = self.dec2(x, skip_enc3)
         x = self.dec3(x, skip_enc2)
-        x = self.dec4(x, skip_enc1)
+        features = self.dec4(x, skip_enc1)
 
-        logits = self.conv_map(x)
+        logits = self.conv_map(features)
 
         preds = torch.sigmoid(logits)
+
+        if get_features:
+            return logits, preds, features
 
         return logits, preds
