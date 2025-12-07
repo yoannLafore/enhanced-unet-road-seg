@@ -1,7 +1,7 @@
 
 task_type: train
 
-
+# Train the base unet with improvment module jointly (single loss)
 train:
   type: improve
   out_dir: out/train/
@@ -17,7 +17,7 @@ train:
   optimizer:
     class_path: torch.optim.Adam
     args:
-      lr: 0.0001
+      lr: 5.0e-4
 
   lr_scheduler:
     class_path: torch.optim.lr_scheduler.CosineAnnealingLR

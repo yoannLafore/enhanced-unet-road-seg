@@ -1,27 +1,31 @@
 
-task_type: train
+task_type: kfold
+
+kfold:
+  k: 5
+  out_dir: out/kfolds/
+  run_name: resnet50_imagenet100_pretrained
+  make_unique_name: true
 
 
 train:
-  out_dir: out/train/
-  run_name: sample_run
-  make_unique_name: true
+  out_dir: None # Will be set by kfolds
   log_wandb: True
   epochs: 200
   batch_size: 8
   validate_every: 5
-  checkpoint_every: 20
+  checkpoint_every: 50
 
   optimizer:
     class_path: torch.optim.Adam
     args:
-      lr: 0.0001
+      lr: 5.0e-04
 
   lr_scheduler:
     class_path: torch.optim.lr_scheduler.CosineAnnealingLR
     args:
       T_max: 200
-      eta_min: 5.0e-05
+      eta_min: 5.0e-06
       last_epoch: -1
 
   criterion:
@@ -40,7 +44,9 @@ train:
     args: {}
 
 
-
-
-
+model:
+  class_path: src.model.resnet_unet.get_resnetunet
+  args:
+    resnet_type: resnet50
+    existing_resnet_path: pretrained_resnets/resnet50-imagenet100.pth
 

@@ -1,0 +1,50 @@
+
+task_type: kfold
+
+# This is sample kfold config for baseline model
+kfold:
+  k: 5 # Number of folds for cross-validation
+  out_dir: out/kfolds/ # Output directory for kfold results
+  run_name: sample_kfolds # Name of the kfold run
+  make_unique_name: true # Append timestamp to run name for uniqueness
+
+
+train:
+  out_dir: None # Will be set by kfolds
+  log_wandb: True # Enable logging to Weights & Biases
+  epochs: 200 # Number of training epochs
+  batch_size: 8 # Batch size for training
+  validate_every: 5 # Frequency of validation (in epochs)
+  checkpoint_every: 20 # Frequency of saving checkpoints (in epochs)
+
+  optimizer: # Optimizer configuration
+    class_path: torch.optim.Adam
+    args:
+      lr: 5.0e-04
+
+  lr_scheduler: # Learning rate scheduler configuration
+    class_path: torch.optim.lr_scheduler.CosineAnnealingLR
+    args:
+      T_max: 200
+      eta_min: 5.0e-06
+      last_epoch: -1
+
+  criterion: # Loss function configuration
+    class_path: src.train.loss.get_bce_with_logits_loss
+    args: {}
+
+
+  transform: # Data augmentation and preprocessing
+    class_path: src.preprocessing.transform.augmented_transform
+    args:
+      height: 400
+      width: 400
+
+  collate_fn: # Collate function for data loading
+    class_path: src.train.collate_fn.get_base_collate_fn
+    args: {}
+
+
+
+
+

@@ -1,0 +1,78 @@
+
+task_type: train
+
+# Train the base unet with improvement module separately (separate losses)
+train:
+  type: improve
+  out_dir: out/train/
+  run_name: improve_sep
+  make_unique_name: true
+  log_wandb: True
+  epochs: 200
+  batch_size: 4
+  validate_every: 5
+  checkpoint_every: 20
+  train_jointly: false
+
+  base_optimizer:
+    class_path: torch.optim.Adam
+    args:
+      lr: 5.0e-4
+
+  base_lr_scheduler:
+    class_path: torch.optim.lr_scheduler.CosineAnnealingLR
+    args:
+      T_max: 200
+      eta_min: 5.0e-06
+      last_epoch: -1
+
+  base_criterion:
+    class_path: src.train.loss.get_bce_with_logits_loss
+    args: {}
+
+
+  improved_optimizer:
+    class_path: torch.optim.Adam
+    args:
+      lr: 0.0001
+
+  improved_lr_scheduler:
+    class_path: torch.optim.lr_scheduler.CosineAnnealingLR
+    args:
+      T_max: 200
+      eta_min: 5.0e-06
+      last_epoch: -1
+
+  improved_criterion:
+    class_path: src.train.loss.get_bce_with_logits_loss
+    args: {}
+
+
+  transform:
+    class_path: src.preprocessing.transform.augmented_transform
+    args:
+      height: 400
+      width: 400
+
+  collate_fn:
+    class_path: src.train.collate_fn.get_base_collate_fn
+    args: {}
+
+
+base_model:
+  class_path: src.model.unet.Unet
+  args:
+    in_channels: 3
+    out_channels: 1
+    dropout_prob: 0.5
+
+
+improved_model:
+  class_path: src.model.unet.Unet
+  args:
+    in_channels: 1
+    out_channels: 1
+    dropout_prob: 0.5
+
+
+

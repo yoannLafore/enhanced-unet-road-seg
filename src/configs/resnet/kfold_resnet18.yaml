@@ -4,7 +4,7 @@ task_type: kfold
 kfold:
   k: 5
   out_dir: out/kfolds/
-  run_name: pos_weight
+  run_name: resnet18_imagenet100
   make_unique_name: true
 
 
@@ -14,18 +14,18 @@ train:
   epochs: 200
   batch_size: 8
   validate_every: 5
-  checkpoint_every: 20
+  checkpoint_every: 50
 
   optimizer:
     class_path: torch.optim.Adam
     args:
-      lr: 0.0001
+      lr: 5.0e-04
 
   lr_scheduler:
     class_path: torch.optim.lr_scheduler.CosineAnnealingLR
     args:
       T_max: 200
-      eta_min: 5.0e-05
+      eta_min: 5.0e-06
       last_epoch: -1
 
   criterion:
@@ -44,6 +44,9 @@ train:
     args: {}
 
 
-
-
+model:
+  class_path: src.model.resnet_unet.get_resnetunet
+  args:
+    resnet_type: resnet18
+    existing_resnet_path: null # No pretrained weights
 
