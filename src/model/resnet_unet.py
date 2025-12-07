@@ -28,6 +28,7 @@ class ResNetUnet(nn.Module):
             raise ValueError(f"Unsupported backbone '{backbone}'")
 
         if from_existing_resnet is not None:
+            print("Using existing ResNet model for encoder weights")
             resnet = from_existing_resnet
 
         # Encoder
@@ -177,6 +178,7 @@ def get_resnetunet(
     *args,
     **kwargs,
 ):
+    from_existing_resnet = None
     if existing_resnet_path is not None:
         from_existing_resnet = load_image100_pretrained_resnet(
             existing_resnet_path, resnet_type=resnet_type
