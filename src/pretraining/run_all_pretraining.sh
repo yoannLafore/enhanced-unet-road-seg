@@ -2,6 +2,7 @@
 DATA_ROOT="~/Desktop/imageNet100"
 EPOCHS=30
 BATCH_SIZE=128
+LR=0.002
 
 BACKBONES=("resnet18" "resnet34" "resnet50" "resnet101")
 
@@ -15,6 +16,7 @@ for R in "${BACKBONES[@]}"; do
         --epochs $EPOCHS \
         --batch_size $BATCH_SIZE \
         --resnet_type "$R" \
-        --save_path "weights/${R}_imagenet100_pretrained.pth"
+        --save_path "/home/yoann/Desktop/rework/project-2-roadseg_nsy/pretrained_resnets/$R-imagenet100.pth" \
+        --lr "$LR"
 
 done
