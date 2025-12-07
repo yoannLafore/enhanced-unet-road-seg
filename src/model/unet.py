@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision.models as models
 
 
 class DoubleConv(nn.Module):
@@ -136,5 +137,61 @@ class Unet(nn.Module):
 
         if get_features:
             return logits, preds, features
+
+        return logits, preds
+
+
+class ResNet50Unet(nn.Module):
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+
+        resnet = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1)
+
+        # Encoder
+        self.enc0 = nn.Sequential(
+            resnet.conv1,
+            resnet.bn1,
+            resnet.relu,
+        )
+
+        self.maxpool = resnet.maxpool
+
+        self.enc1 = resnet.layer1
+        self.enc2 = resnet.layer2
+        self.enc3 = resnet.layer3
+        self.enc4 = resnet.layer4
+
+        # Decoder
+        self.dec4 = Decoder(2048, 1024, 1024, 1024)
+        self.dec3 = Decoder(1024, 512, 512, 512)
+        self.dec2 = Decoder(512, 256, 256, 256)
+        self.dec1 = Decoder(256, 64, 64, 64)
+
+        self.conv_map = nn.Conv2d(64, 1, 1)
+
+    def forward(self, x):
+
+        x_in = x
+
+        skip0 = self.enc0(x)
+        x = self.maxpool(skip0)
+
+        skip1 = self.enc1(x)
+        skip2 = self.enc2(skip1)
+        skip3 = self.enc3(skip2)
+        x = self.enc4(skip3)
+
+        x = self.dec4(x, skip3)
+        x = self.dec3(x, skip2)
+        x = self.dec2(x, skip1)
+        x = self.dec1(x, skip0)
+
+        if x.shape[2:] != x_in.shape[2:]:
+            x = F.interpolate(
+                x, size=x_in.shape[2:], mode="bilinear", align_corners=False
+            )
+
+        logits = self.conv_map(x)
+        preds = torch.sigmoid(logits)
 
         return logits, preds
