@@ -18,11 +18,11 @@ def augmented_transform(width: int = 400, height: int = 400) -> A.Compose:
             A.HorizontalFlip(p=0.5),
             A.VerticalFlip(p=0.5),
             A.RandomRotate90(p=0.5),
-            A.ShiftScaleRotate(
-                shift_limit=0.03,
-                scale_limit=0.05,
-                rotate_limit=30,
-                border_mode=cv2.BORDER_REFLECT_101,
+            A.Affine(
+                translate_percent=(-0.03, 0.03),
+                scale=(0.95, 1.05),
+                rotate=(-30, 30),
+                mode=cv2.BORDER_REFLECT_101,
                 p=0.7,
             ),
             A.RandomBrightnessContrast(
@@ -38,7 +38,7 @@ def augmented_transform(width: int = 400, height: int = 400) -> A.Compose:
             ),
             A.GaussNoise(p=0.3),
             A.MotionBlur(blur_limit=3, p=0.2),
-            A.ImageCompression(quality_lower=70, quality_upper=100, p=0.3),
+            A.ImageCompression(p=0.3),
             A.Normalize(mean=DATASET_MEAN, std=DATASET_STD),
             A.ToTensorV2(),
         ]
