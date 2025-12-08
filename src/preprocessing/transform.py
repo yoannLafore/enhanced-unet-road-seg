@@ -6,7 +6,9 @@ DATASET_MEAN = (0.33298134, 0.33009373, 0.29579783)
 DATASET_STD = (0.18409964, 0.17780256, 0.17631003)
 
 
-def augmented_transform(width: int = 400, height: int = 400) -> A.Compose:
+def augmented_transform(
+    width: int = 400, height: int = 400, seed: int = 42
+) -> A.Compose:
     return A.Compose(
         [
             A.RandomResizedCrop(
@@ -41,16 +43,18 @@ def augmented_transform(width: int = 400, height: int = 400) -> A.Compose:
             A.ImageCompression(p=0.3),
             A.Normalize(mean=DATASET_MEAN, std=DATASET_STD),
             A.ToTensorV2(),
-        ]
+        ],
+        seed=seed,
     )
 
 
-def default_transform() -> A.Compose:
+def default_transform(seed: int = 42) -> A.Compose:
     return A.Compose(
         [
             A.Normalize(mean=DATASET_MEAN, std=DATASET_STD),
             A.ToTensorV2(),
-        ]
+        ],
+        seed=seed,
     )
 
 

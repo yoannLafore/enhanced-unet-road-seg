@@ -39,10 +39,14 @@ def train_model_on_ds(train_ds, test_ds, cfg):
     collate_fn = build_from_cfg(cfg.train.collate_fn)
     batch_size = int(train_cfg.batch_size)
 
+    generator = torch.Generator()
+    generator.manual_seed(cfg.random_state)
+
     train_loader = torch.utils.data.DataLoader(
         train_ds,
         batch_size=batch_size,
         shuffle=True,
+        generator=generator,
         collate_fn=collate_fn,
         pin_memory=True,
         num_workers=4,
@@ -53,6 +57,7 @@ def train_model_on_ds(train_ds, test_ds, cfg):
         batch_size=batch_size,
         shuffle=False,
         collate_fn=collate_fn,
+        generator=generator,
         pin_memory=True,
         num_workers=4,
     )
@@ -144,10 +149,14 @@ def train_improve_model_on_ds(train_ds, test_ds, cfg):
     collate_fn = build_from_cfg(cfg.train.collate_fn)
     batch_size = int(train_cfg.batch_size)
 
+    generator = torch.Generator()
+    generator.manual_seed(cfg.random_state)
+
     train_loader = torch.utils.data.DataLoader(
         train_ds,
         batch_size=batch_size,
         shuffle=True,
+        generator=generator,
         collate_fn=collate_fn,
         pin_memory=True,
         num_workers=4,
@@ -160,6 +169,7 @@ def train_improve_model_on_ds(train_ds, test_ds, cfg):
         collate_fn=collate_fn,
         pin_memory=True,
         num_workers=4,
+        generator=generator,
     )
 
     train_jointly = bool(train_cfg.train_jointly)
@@ -326,13 +336,14 @@ def train_improve_model_on_ds(train_ds, test_ds, cfg):
 
 def train_from_cfg(cfg):
     random_state = cfg.random_state
+    set_seed(random_state)
 
     # Create the dataset
     train_transform_cfg = cfg.train.transform
     test_transform_cfg = cfg.test.transform
 
-    train_transform = build_from_cfg(train_transform_cfg)
-    test_transform = build_from_cfg(test_transform_cfg)
+    train_transform = build_from_cfg(train_transform_cfg, seed=random_state)
+    test_transform = build_from_cfg(test_transform_cfg, seed=random_state)
 
     train_out_dir = cfg.train.out_dir
     train_run_name = cfg.train.run_name

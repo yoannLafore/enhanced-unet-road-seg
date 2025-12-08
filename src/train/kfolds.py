@@ -9,14 +9,15 @@ import pandas as pd
 
 def perform_kfolds(cfg: dict):
     random_state = cfg.random_state
+    set_seed(random_state)
 
     # Get the k-folds
     k = int(cfg.kfold.k)
     train_transform_cfg = cfg.train.transform
     test_transform_cfg = cfg.test.transform
 
-    train_transform = build_from_cfg(train_transform_cfg)
-    test_transform = build_from_cfg(test_transform_cfg)
+    train_transform = build_from_cfg(train_transform_cfg, seed=random_state)
+    test_transform = build_from_cfg(test_transform_cfg, seed=random_state)
 
     kfold = load_k_fold_datasets(
         cfg.data.train_dir, train_transform, test_transform, k, random_state
