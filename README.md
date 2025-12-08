@@ -64,3 +64,18 @@ This script automatically runs all cross-validation experiments using the same r
 ## 📝 Methodology
 
 The methodology used to address this problem is described in detail in the accompanying report.
+
+## 📚 External Libraries and Datasets
+
+The following section provides the sources and justification for the external libraries and datasets used throughout the project.
+
+### Datasets
+
+**ImageNet100:** To assess the effect of ResNet pretraining before using it as a backbone for U-Net, access to a labeled image dataset was required. For practical and resource-related reasons, a subset of the ImageNet-1k dataset containing 100 randomly sampled classes was selected. This dataset is publicly available on Kaggle [here](https://www.kaggle.com/datasets/ambityga/imagenet100).
+
+Minor formatting adjustments were applied for code compatibility:
+
+* `train.X1/, train.X2/, train.X3/, train.X4/` were merged into `train/`
+* `val.X/` was renamed to `val/`
+
+
