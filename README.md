@@ -135,5 +135,16 @@ The current codebase includes configuration sets for the following experiments:
 
 Additionally, a convenience Bash script, `run_all_configs.sh`, is provided to launch all configurations used to produce the results reported in the study.
 
+#### 2. Pre-processing
+
+To improve training efficiency and maximize performance on the relatively small dataset, a data augmentation–based preprocessing strategy was implemented. This stage is handled under the `preprocessing/` directory.
+
+* A custom PyTorch dataset class is defined in `dataset.py` to wrap the dataset in a PyTorch-compatible format and to apply the augmentations described below. This module also provides utilities for loading the data either as a standard split or within a k-fold cross-validation setup.
+
+* To mitigate overfitting and improve model robustness, an image augmentation pipeline was implemented. The `transform.py` file defines the training transformation `augmented_transform`, which applies a combination of spatial transformations (scaling, rotation, affine) and photometric transformations (hue variation, brightness adjustment, compression), each applied with a given probability. The pipeline concludes with image normalization.
+
+* The validation and test transformation, `default_transform`, applies normalization only.
+
+* Dataset statistics (mean and standard deviation) are computed once in `compute_mean_std` over the full dataset. Although this technically introduces minimal information leakage into the validation folds, the practical impact is considered negligible.
 
 
