@@ -7,7 +7,7 @@ This project applies and evaluates variants of the U-Net architecture for the ta
 
 More specifically, an in-depth study is conducted on integrating a ResNet backbone into U-Net, both with and without pretraining. In addition, the impact of adding a refinement module at the output of the U-Net is evaluated.
 
-## 🚀 Quick Setup for generating submission
+## 🚀 Quick Setup
 
 The following instructions describe the minimum steps required to reproduce the AIcrowd submission.
 
@@ -43,3 +43,20 @@ python -m run
 ```
 
 The predicted mask images will be saved in the `generated_test/` directory, and the corresponding submission file will be created at the repository root as `submission.csv`.
+
+### (Optional) 5. Training & Results Reproducibility
+
+To reproduce the training runs and results reported in the study, the provided configuration framework can be used. First, set the path to the training dataset in `src/configs/base.yaml` as follows:
+
+```yaml
+data: 
+  train_dir: /path/to/data/training/
+```
+
+Then, from the repository root, run the following script to execute all training configurations used to produce the reported results and store the outputs in the `out/` directory:
+
+```bash
+./src/configs/run_all_configs.sh
+```
+
+This script automatically runs all cross-validation experiments using the same random seed as in the report. Note that minor variations may still occur due to the non-deterministic behavior of NVIDIA GPUs.
