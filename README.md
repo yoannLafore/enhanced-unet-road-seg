@@ -79,3 +79,31 @@ Minor formatting adjustments were applied for code compatibility:
 * `val.X/` was renamed to `val/`
 
 
+### Libraries
+
+#### Maths and Statistics
+
+* `numpy`: for numerical computations and array handling.
+* `scikit-learn`: for computing validation metrics.
+
+#### Computer Vision & Data Augmentation
+
+* `albumentations`: for applying image transformations while preserving mask consistency.
+* `opencv-python-headless`: for efficient image processing without GUI dependencies.
+* `Pillow`: for basic image loading, saving, and manipulation operations.
+
+#### Plotting
+
+* `matplotlib`: for visualizing training curves, results, and sample predictions.
+
+#### Deep Learning Frameworks
+
+* `torch`: for model implementation, training, and inference.
+* `torchvision`: for pretrained models, dataset utilities, and common computer vision transforms.
+
+#### Utilities
+
+* `tqdm`: for progress bar visualization during training and evaluation.
+* `wandb`: for experiment tracking, logging, and result visualization.
+* `omegaconf`: for configuration management.
+
