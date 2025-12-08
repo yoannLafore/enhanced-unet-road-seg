@@ -11,7 +11,7 @@ kfold:
 train:
   type: improve
   run_name: None # Will be set by kfolds
-  log_wandb: True
+  log_wandb: false
   epochs: 200
   batch_size: 8
   validate_every: 5
