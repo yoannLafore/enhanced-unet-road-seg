@@ -1,4 +1,5 @@
 from src.model.unet import *
+from src.model.resnet_unet import *
 from src.preprocessing.dataset import *
 import os
 import torch
@@ -35,9 +36,9 @@ def main():
     # Load test dataset
     test_transform = default_transform()
 
-    test_imgs = sorted(
+    test_imgs = [
         os.path.join(TEST_IMGS_DIR, f"test_{i}/test_{i}.png") for i in range(1, 51)
-    )
+    ]
     print(f"Found {len(test_imgs)} test images.")
 
     for i, img_path in tqdm(enumerate(test_imgs), total=len(test_imgs)):
