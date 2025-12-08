@@ -107,3 +107,33 @@ Minor formatting adjustments were applied for code compatibility:
 * `wandb`: for experiment tracking, logging, and result visualization.
 * `omegaconf`: for configuration management.
 
+
+### 🧩 Structure
+
+This section describes and explains the codebase structure, covering all processing stages including data preparation, training, evaluation, and cross-validation. The main codebase is located under `src/` and is organized into the following categories.
+
+#### 1. Configs
+
+To efficiently test different approaches, hyperparameters, and model variants, a versatile configuration-based framework was implemented to execute various tasks based on provided configuration files.
+
+The configuration system operates as follows:
+
+* A base configuration file (`base.yaml`) serves as the default template and is merged at runtime with any task-specific configuration file.
+* Task-specific configuration files are grouped into subdirectories.
+* Two primary tasks are supported: `train` (standard training) and `kfolds` (k-fold cross-validation). Example configurations for both tasks are available under `configs/sample/`.
+* To run a configuration, execute the following command from the repository root:
+
+```bash
+python -m src.run_config -c /path/to/config-file.yaml
+```
+
+The current codebase includes configuration sets for the following experiments:
+
+* Baseline 5-fold cross-validation (`baseline/`)
+* 5-fold cross-validation for ResNet-backed U-Nets, with and without pretrained weights (`resnet/`)
+* 5-fold cross-validation for U-Net models augmented with a refinement module (`improvement_module/`)
+
+Additionally, a convenience Bash script, `run_all_configs.sh`, is provided to launch all configurations used to produce the results reported in the study.
+
+
+
