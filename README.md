@@ -60,3 +60,7 @@ Then, from the repository root, run the following script to execute all training
 ```
 
 This script automatically runs all cross-validation experiments using the same random seed as in the report. Note that minor variations may still occur due to the non-deterministic behavior of NVIDIA GPUs.
+
+## 📝 Methodology
+
+The methodology used to address this problem is described in detail in the accompanying report.
