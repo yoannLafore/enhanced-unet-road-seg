@@ -148,3 +148,22 @@ To improve training efficiency and maximize performance on the relatively small 
 * Dataset statistics (mean and standard deviation) are computed once in `compute_mean_std` over the full dataset. Although this technically introduces minimal information leakage into the validation folds, the practical impact is considered negligible.
 
 
+#### 3. Model
+
+The models used in this project are implemented under the `model/` directory. This includes a standard U-Net architecture as well as a U-Net variant with a ResNet backbone.
+
+##### U-Net
+
+A basic U-Net architecture is implemented in `unet.py`. It follows a standard 4-level design similar to the model proposed in *[U-Net: Convolutional Networks for Biomedical Image Segmentation](https://arxiv.org/abs/1505.04597)*.
+
+One modification concerns the downsampling stages: strided convolutions are used instead of max-pooling layers to allow for improved feature retention during spatial reduction.
+
+##### ResNet-Backbone U-Net
+
+The U-Net with a ResNet backbone is implemented in `resnet_unet.py`. In this variant, the standard U-Net encoder is replaced by the encoding layers of a ResNet architecture.
+
+A general `ResNetUnet` class is defined, supporting ResNet-18, ResNet-34, ResNet-50, and ResNet-101 backbones. The implementation allows either the use of pretrained weights from `torchvision` (used for testing purposes only) or loading weights from externally pretrained ResNet models (used for the experiments reported in the study).
+
+For convenience, specialized wrapper classes are also provided: `ResNetUnet18`, `ResNetUnet34`, `ResNetUnet50`, and `ResNetUnet101`.
+
+
