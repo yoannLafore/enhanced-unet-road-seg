@@ -108,11 +108,11 @@ Minor formatting adjustments were applied for code compatibility:
 * `omegaconf`: for configuration management.
 
 
-### 🧩 Structure
+## 🧩 Structure
 
 This section describes and explains the codebase structure, covering all processing stages including data preparation, training, evaluation, and cross-validation. The main codebase is located under `src/` and is organized into the following categories.
 
-#### 1. Configs
+### 1. Configs
 
 To efficiently test different approaches, hyperparameters, and model variants, a versatile configuration-based framework was implemented to execute various tasks based on provided configuration files.
 
@@ -135,7 +135,7 @@ The current codebase includes configuration sets for the following experiments:
 
 Additionally, a convenience Bash script, `run_all_configs.sh`, is provided to launch all configurations used to produce the results reported in the study.
 
-#### 2. Pre-processing
+### 2. Pre-processing
 
 To improve training efficiency and maximize performance on the relatively small dataset, a data augmentation–based preprocessing strategy was implemented. This stage is handled under the `preprocessing/` directory.
 
@@ -148,17 +148,17 @@ To improve training efficiency and maximize performance on the relatively small 
 * Dataset statistics (mean and standard deviation) are computed once in `compute_mean_std` over the full dataset. Although this technically introduces minimal information leakage into the validation folds, the practical impact is considered negligible.
 
 
-#### 3. Model
+### 3. Model
 
 The models used in this project are implemented under the `model/` directory. This includes a standard U-Net architecture as well as a U-Net variant with a ResNet backbone.
 
-##### U-Net
+#### U-Net
 
 A basic U-Net architecture is implemented in `unet.py`. It follows a standard 4-level design similar to the model proposed in *[U-Net: Convolutional Networks for Biomedical Image Segmentation](https://arxiv.org/abs/1505.04597)*.
 
 One modification concerns the downsampling stages: strided convolutions are used instead of max-pooling layers to allow for improved feature retention during spatial reduction.
 
-##### ResNet-Backbone U-Net
+#### ResNet-Backbone U-Net
 
 The U-Net with a ResNet backbone is implemented in `resnet_unet.py`. In this variant, the standard U-Net encoder is replaced by the encoding layers of a ResNet architecture.
 
@@ -167,20 +167,20 @@ A general `ResNetUnet` class is defined, supporting ResNet-18, ResNet-34, ResNet
 For convenience, specialized wrapper classes are also provided: `ResNetUnet18`, `ResNetUnet34`, `ResNetUnet50`, and `ResNetUnet101`.
 
 
-#### 4. Training and Evaluation
+### 4. Training and Evaluation
 
 This section summarizes the training and evaluation pipeline implemented under the `train/` directory.
 
 ---
 
-##### Loss & Data Loading
+#### Loss & Data Loading
 
 * **Loss** functions are defined in `loss.py` (binary cross-entropy is currently supported).
 * **Batch collation** is handled in `collate_fn.py`, which concatenates images and masks into PyTorch tensors compatible with the DataLoader.
 
 ---
 
-##### Training Epoch
+#### Training Epoch
 
 Per-epoch training logic is implemented in `train_epoch.py`.
 A standard training routine (`train_epoch`) is provided for all base models, along with specialized procedures for U-Nets extended with a refinement module.
@@ -198,7 +198,7 @@ Both strategies optionally allow forwarding intermediate U-Net feature maps to t
 
 ---
 
-##### Evaluation Epoch
+#### Evaluation Epoch
 
 Model evaluation is implemented in `eval_epoch.py`.
 
@@ -213,7 +213,7 @@ Two evaluation functions are provided:
 
 ---
 
-##### Training Loop
+#### Training Loop
 
 The complete training loop is implemented in `unet_train.py` and is fully driven by the configuration framework described earlier.
 
@@ -232,7 +232,7 @@ Training can be launched from any configuration file using the `train_from_cfg` 
 
 ---
 
-##### K-Fold Cross-Validation
+#### K-Fold Cross-Validation
 
 K-fold evaluation is implemented in `kfolds.py`.
 
