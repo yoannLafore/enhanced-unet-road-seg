@@ -53,6 +53,8 @@ data:
   train_dir: /path/to/data/training/
 ```
 
+Then, download the ResNet pretrained weights zip from the **Pretrained ResNet weights** release on Github and extract them at the repository root. This will create a directory `pretrained_resnets` containing the weights. 
+
 Then, from the repository root, run the following script to execute all training configurations used to produce the reported results and store the outputs in the `out/` directory:
 
 ```bash
