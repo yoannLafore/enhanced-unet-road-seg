@@ -250,6 +250,8 @@ Pretraining was performed for **ResNet-18, ResNet-34, ResNet-50, and ResNet-101*
 
 To run the pretraining pipeline, the ImageNet100 dataset must first be downloaded and formatted following the procedure described in the [Datasets](#datasets) section. The dataset path should then be set in `run_all_pretraining.sh` via the `DATA_ROOT` variable.
 
+### 6. Helpers and Utilities
 
+Helper functions adapted from the provided handout code for generating AIcrowd submissions are located under the `helper/` directory.
 
-
+Utility functions for parsing and managing configuration files are implemented in `utils.py`. The main entry point for executing a training or evaluation run from a configuration file is provided in `run_config.py`.
