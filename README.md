@@ -167,3 +167,76 @@ A general `ResNetUnet` class is defined, supporting ResNet-18, ResNet-34, ResNet
 For convenience, specialized wrapper classes are also provided: `ResNetUnet18`, `ResNetUnet34`, `ResNetUnet50`, and `ResNetUnet101`.
 
 
+#### 4. Training and Evaluation
+
+This section summarizes the training and evaluation pipeline implemented under the `train/` directory.
+
+---
+
+##### Loss & Data Loading
+
+* **Loss** functions are defined in `loss.py` (binary cross-entropy is currently supported).
+* **Batch collation** is handled in `collate_fn.py`, which concatenates images and masks into PyTorch tensors compatible with the DataLoader.
+
+---
+
+##### Training Epoch
+
+Per-epoch training logic is implemented in `train_epoch.py`.
+A standard training routine (`train_epoch`) is provided for all base models, along with specialized procedures for U-Nets extended with a refinement module.
+
+Two training strategies are available for the refinement setup:
+
+* **Joint training (`train_epoch_improve_module_joint`)**
+  A single forward–backward pass propagates gradients through both the refinement module and the base U-Net using a single loss.
+
+* **Separate training (`train_epoch_improve_module_sep`)**
+  The base U-Net and refinement module are optimized independently, each with its own loss, optimizer, and scheduler.
+  Predictions from the base U-Net are detached before being passed to the refinement module, and backpropagation is run separately for both components.
+
+Both strategies optionally allow forwarding intermediate U-Net feature maps to the refinement module using `forward_features=true`.
+
+---
+
+##### Evaluation Epoch
+
+Model evaluation is implemented in `eval_epoch.py`.
+
+* The validation set is processed to produce binary masks using a **0.5 threshold**.
+* Metrics computed include **Accuracy, F1-score, Precision, and Recall**.
+* Optional image and mask logging to **Weights & Biases** can be enabled via `log_wandb=true`.
+
+Two evaluation functions are provided:
+
+* `evaluate_epoch` for standard one-pass models (U-Net, ResNet U-Net).
+* `evaluate_epoch_improve_module` for models with refinement modules.
+
+---
+
+##### Training Loop
+
+The complete training loop is implemented in `unet_train.py` and is fully driven by the configuration framework described earlier.
+
+* Handles dataloaders, optimizers, schedulers, and validation.
+* Supports both:
+
+  * **Single-pass models:** `train_model_on_ds`
+  * **Refinement models:** `train_improve_model_on_ds`
+
+Extensive logging is performed:
+
+* **Locally**: checkpoints, metrics, and configs saved to the configured output directory.
+* **Online (optional)**: experiment tracking via Weights & Biases.
+
+Training can be launched from any configuration file using the `train_from_cfg` entry point.
+
+---
+
+##### K-Fold Cross-Validation
+
+K-fold evaluation is implemented in `kfolds.py`.
+
+* Trains models across all folds defined in a configuration file.
+* Aggregates final metrics across folds to produce averaged performance results.
+* Saves all results via local logging for reproducibility and comparison.
+
