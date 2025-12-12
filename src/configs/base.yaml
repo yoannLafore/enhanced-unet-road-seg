@@ -2,7 +2,7 @@
 # When running running a config, this file is merged with the specific config file
 # Specific config files can override any of the settings defined here
 
-random_state: 42 # Global random seed for reproducibility
+random_state: 43 # Global random seed for reproducibility
 device: cuda # Device to use for computations (e.g., 'cuda' or 'cpu')
 
 data: 

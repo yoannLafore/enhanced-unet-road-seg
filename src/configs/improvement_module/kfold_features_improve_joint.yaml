@@ -12,7 +12,7 @@ train:
   type: improve
   run_name: None # Will be set by kfolds
   log_wandb: false
-  epochs: 200
+  epochs: 300
   batch_size: 8
   validate_every: 5
   checkpoint_every: 50
@@ -27,12 +27,12 @@ train:
   lr_scheduler:
     class_path: torch.optim.lr_scheduler.CosineAnnealingLR
     args:
-      T_max: 200
+      T_max: 300
       eta_min: 5.0e-06
       last_epoch: -1
 
   criterion:
-    class_path: src.train.loss.get_bce_with_logits_loss
+    class_path: src.train.utils.loss.get_bce_with_logits_loss
     args: {}
 
   transform:
@@ -42,7 +42,7 @@ train:
       width: 400
 
   collate_fn:
-    class_path: src.train.collate_fn.get_base_collate_fn
+    class_path: src.train.utils.collate_fn.get_base_collate_fn
     args: {}
 
 

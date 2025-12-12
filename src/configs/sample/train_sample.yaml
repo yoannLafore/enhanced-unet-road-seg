@@ -25,7 +25,7 @@ train:
       last_epoch: -1
 
   criterion: # Loss function configuration
-    class_path: src.train.loss.get_bce_with_logits_loss
+    class_path: src.train.utils.loss.get_bce_with_logits_loss
     args: {}
 
 
@@ -36,6 +36,6 @@ train:
       width: 400
 
   collate_fn: # Collate function for data loading
-    class_path: src.train.collate_fn.get_base_collate_fn
+    class_path: src.train.utils.collate_fn.get_base_collate_fn
     args: {}
 
