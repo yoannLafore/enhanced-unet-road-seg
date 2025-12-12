@@ -31,25 +31,28 @@ class DoubleConv(nn.Module):
 class DownBlock(nn.Module):
     """Perform /2 downsampling using strided convolutions"""
 
-    def __init__(self, in_channels, out_channels):
+    def __init__(self, in_channels, out_channels, use_maxpool=False):
         super().__init__()
 
-        self.down = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, 3, stride=2, padding=1),
-            nn.ReLU(inplace=True),
+        self.down = (
+            nn.Sequential(
+                nn.Conv2d(in_channels, out_channels, 3, stride=2, padding=1),
+                nn.ReLU(inplace=True),
+            )
+            if not use_maxpool
+            else nn.MaxPool2d(2)
         )
-        # TODO : do we relu here ?
 
     def forward(self, x):
         return self.down(x)
 
 
 class Encoder(nn.Module):
-    def __init__(self, in_channels, out_channels):
+    def __init__(self, in_channels, out_channels, use_maxpool=False):
         super().__init__()
 
         self.conv = DoubleConv(in_channels, out_channels)
-        self.down = DownBlock(out_channels, out_channels)
+        self.down = DownBlock(out_channels, out_channels, use_maxpool=use_maxpool)
 
     def forward(self, x):
         x = self.conv(x)
@@ -97,13 +100,15 @@ class Decoder(nn.Module):
 
 class Unet(nn.Module):
 
-    def __init__(self, in_channels=3, out_channels=1, dropout_prob=0.5):
+    def __init__(
+        self, in_channels=3, out_channels=1, dropout_prob=0.5, use_maxpool=False
+    ):
         super().__init__()
 
-        self.enc1 = Encoder(in_channels, 64)
-        self.enc2 = Encoder(64, 128)
-        self.enc3 = Encoder(128, 256)
-        self.enc4 = Encoder(256, 512)
+        self.enc1 = Encoder(in_channels, 64, use_maxpool=use_maxpool)
+        self.enc2 = Encoder(64, 128, use_maxpool=use_maxpool)
+        self.enc3 = Encoder(128, 256, use_maxpool=use_maxpool)
+        self.enc4 = Encoder(256, 512, use_maxpool=use_maxpool)
 
         self.bottom_conv = DoubleConv(512, 1024)
         self.bottom_conv2 = DoubleConv(1024, 1024)
