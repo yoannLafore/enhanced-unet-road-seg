@@ -12,7 +12,7 @@ train:
   run_name: unet_compet
   make_unique_name: true
   log_wandb: true
-  epochs: 7000
+  epochs: 4500
   batch_size: 16
   validate_every: 5
   checkpoint_every: 250
@@ -27,7 +27,7 @@ train:
   lr_scheduler:
     class_path: torch.optim.lr_scheduler.CosineAnnealingLR
     args:
-      T_max: 7000
+      T_max: 4500
       eta_min: 5.0e-06
       last_epoch: -1
 
