@@ -3,11 +3,11 @@ from src.model.unet import *
 from src.preprocessing.dataset import *
 from src.utils import *
 import os
-from src.train.unet_train import train_model_on_ds, train_improve_model_on_ds
+from src.train.train_from_cfg import train_model_on_ds, train_improve_model_on_ds
 import pandas as pd
 
 
-def perform_kfolds(cfg: dict):
+def perform_kfolds_from_cfg(cfg: dict):
     random_state = cfg.random_state
     set_seed(random_state)
 

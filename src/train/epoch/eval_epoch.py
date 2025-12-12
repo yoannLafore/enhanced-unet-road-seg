@@ -6,7 +6,6 @@ from sklearn.metrics import (
     recall_score,
     f1_score,
 )
-from src.preprocessing.transform import denormalize_tensor
 
 
 def _evaluate_epoch(
@@ -40,14 +39,9 @@ def _evaluate_epoch(
             preds_flat = (outputs.view(-1) > threshold).long()
             masks_flat = (masks.view(-1) > threshold).long()
 
-            # Store for overall metrics
-            denormalized_imgs = denormalize_tensor(images[:, :3, :, :].cpu()).clamp(
-                0, 1
-            )
-
             preds_list.append(preds_flat)
             masks_list.append(masks_flat)
-            imgs_list.append(denormalized_imgs)
+            imgs_list.append(images[:, :3, :, :].cpu())
 
         # Concatenate all tensors
         preds_flat = torch.cat(preds_list)
