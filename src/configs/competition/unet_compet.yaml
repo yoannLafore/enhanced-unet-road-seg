@@ -32,7 +32,7 @@ train:
       last_epoch: -1
 
   criterion:
-    class_path: src.train.loss.get_bce_with_logits_loss
+    class_path: src.train.utils.loss.get_bce_with_logits_loss
     args: {
       pos_weight: 3.0
     }
@@ -45,7 +45,7 @@ train:
       width: 400
 
   collate_fn:
-    class_path: src.train.collate_fn.get_base_collate_fn
+    class_path: src.train.utils.collate_fn.get_base_collate_fn
     args: {}
 
 
