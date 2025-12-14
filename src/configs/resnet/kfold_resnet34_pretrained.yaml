@@ -45,8 +45,7 @@ train:
 
 
 model:
-  class_path: src.model.resnet_unet.get_resnetunet
+  class_path: src.model.resnet_unet.ResNet34Unet
   args:
-    resnet_type: resnet34
-    existing_resnet_path: pretrained_resnets/resnet34-imagenet100.pth
+    pretrained: true
 
