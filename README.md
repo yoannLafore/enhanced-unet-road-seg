@@ -26,7 +26,19 @@ pip install -r requirements.txt
 
 A justification for the chosen libraries is provided further below.
 
-### 3. Dataset Path
+### 3. Model Weights
+
+Because the competition model weights exceed GitHub’s file size limit, they cannot be included directly in the repository. To obtain the model weights:
+
+* Navigate to the GitHub repository on the **main** branch
+* Open the **[Competition Model Weights](https://github.com/CS-433/project-2-roadseg_nsy/releases/tag/resnet-weights)** release
+* Download the archive `competition_model.zip`
+* Extract it at the repository root
+
+This will create the directory `competition_model/` containing the file `compet_unet.pth`, which holds the competition model weights.
+
+
+### 4. Dataset Path
 
 In `run.py`, set the `TEST_IMGS_DIR` variable to the path of the directory containing the test images (organized in the same structure as provided by AIcrowd). For example:
 
@@ -34,7 +46,7 @@ In `run.py`, set the `TEST_IMGS_DIR` variable to the path of the directory conta
 TEST_IMGS_DIR="/path/to/data/test_set_images/"
 ```
 
-### 4. Generating the Submission
+### 5. Generating the Submission
 
 To generate the submission, run the following command from the repository root:
 
@@ -44,7 +56,7 @@ python -m run
 
 The predicted mask images will be saved in the `generated_test/` directory, and the corresponding submission file will be created at the repository root as `submission.csv`.
 
-### (Optional) 5. Training & Results Reproducibility
+### (Optional) 6. Training & Results Reproducibility
 
 To reproduce the training runs and results reported in the study, the provided configuration framework can be used. First, set the path to the training dataset in `src/configs/base.yaml` as follows:
 
