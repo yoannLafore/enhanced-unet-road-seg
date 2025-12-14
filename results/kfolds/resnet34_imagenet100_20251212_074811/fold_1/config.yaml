@@ -1,0 +1,52 @@
+random_state: 43
+device: cuda
+data:
+  train_dir: /home/yoann/Desktop/project-2-roadseg_nsy/data/training/
+  test_size: 0.2
+model:
+  class_path: src.model.resnet_unet.get_resnetunet
+  args:
+    in_channels: 3
+    out_channels: 1
+    dropout_prob: 0.5
+    resnet_type: resnet34
+    existing_resnet_path: null
+test:
+  transform:
+    class_path: src.preprocessing.transform.default_transform
+    args: {}
+task_type: kfold
+kfold:
+  k: 5
+  out_dir: out/kfolds/
+  run_name: resnet34_imagenet100
+  make_unique_name: true
+train:
+  out_dir: out/kfolds/resnet34_imagenet100_20251212_074811/fold_1
+  log_wandb: false
+  epochs: 300
+  batch_size: 8
+  validate_every: 5
+  checkpoint_every: 50
+  optimizer:
+    class_path: torch.optim.Adam
+    args:
+      lr: 0.0005
+  lr_scheduler:
+    class_path: torch.optim.lr_scheduler.CosineAnnealingLR
+    args:
+      T_max: 300
+      eta_min: 5.0e-06
+      last_epoch: -1
+  criterion:
+    class_path: src.train.loss.get_bce_with_logits_loss
+    args: {}
+  transform:
+    class_path: src.preprocessing.transform.augmented_transform
+    args:
+      height: 400
+      width: 400
+  collate_fn:
+    class_path: src.train.collate_fn.get_base_collate_fn
+    args: {}
+  run_name: fold_1

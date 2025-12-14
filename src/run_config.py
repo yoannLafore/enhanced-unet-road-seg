@@ -1,7 +1,7 @@
 import argparse
 from src.utils import *
-from src.train.kfolds import perform_kfolds
-from src.train.unet_train import train_from_cfg
+from src.train.kfolds_from_cfg import perform_kfolds_from_cfg
+from src.train.train_from_cfg import train_from_cfg
 
 
 def parse_args():
@@ -32,7 +32,7 @@ def main():
         train_from_cfg(cfg)
     elif task_type == "kfold":
         # Perform k-fold cross-validation
-        perform_kfolds(cfg)
+        perform_kfolds_from_cfg(cfg)
     else:
         raise ValueError(f"Unknown task type '{task_type}'")
 

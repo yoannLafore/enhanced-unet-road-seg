@@ -1,0 +1,59 @@
+
+task_type: train
+random_state: 43
+
+data: 
+#  train_dir: /home/yoann/Desktop/project-2-roadseg_nsy/data/training/ # Path to the training data provided on aicrowd
+  test_size: 0.01 # Proportion of data to use for validation
+
+
+train:
+  out_dir: out/compet/
+  run_name: unet_compet
+  make_unique_name: true
+  log_wandb: true
+  epochs: 4500
+  batch_size: 16
+  validate_every: 5
+  checkpoint_every: 250
+  pretrained_weights: null
+
+  optimizer:
+    class_path: torch.optim.AdamW
+    args:
+      lr: 1.0e-04
+      weight_decay: 1e-4
+
+  lr_scheduler:
+    class_path: torch.optim.lr_scheduler.CosineAnnealingLR
+    args:
+      T_max: 4500
+      eta_min: 5.0e-06
+      last_epoch: -1
+
+  criterion:
+    class_path: src.train.utils.loss.get_bce_with_logits_loss
+    args: {
+      pos_weight: 3.0
+    }
+
+
+  transform:
+    class_path: src.preprocessing.transform.augmented_transform
+    args:
+      height: 400
+      width: 400
+
+  collate_fn:
+    class_path: src.train.utils.collate_fn.get_base_collate_fn
+    args: {}
+
+
+model: # Model configuration
+  class_path: src.model.unet.Unet
+  args:
+    in_channels: 3
+    out_channels: 1
+    dropout_prob: 0.5
+    use_maxpool: false
+

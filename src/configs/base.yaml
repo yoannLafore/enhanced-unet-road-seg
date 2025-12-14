@@ -1,13 +1,16 @@
+# This is the base configuration file
+# When running running a config, this file is merged with the specific config file
+# Specific config files can override any of the settings defined here
 
-random_state: 42
-device: cuda
+random_state: 43 # Global random seed for reproducibility
+device: cuda # Device to use for computations (e.g., 'cuda' or 'cpu')
 
-data:
-  train_dir: /home/yoann/Desktop/project-2-roadseg_nsy/data/training/
-  test_size: 0.2
+data: 
+  train_dir: /home/yoann/Desktop/project-2-roadseg_nsy/data/training/ # Path to the training data provided on aicrowd
+  test_size: 0.2 # Proportion of data to use for validation
 
 
-model:
+model: # Model configuration
   class_path: src.model.unet.Unet
   args:
     in_channels: 3
@@ -15,7 +18,7 @@ model:
     dropout_prob: 0.5
 
 
-test:
+test: # Test configuration
   transform:
     class_path: src.preprocessing.transform.default_transform
     args: {}

@@ -1,28 +1,20 @@
 # Core array & math
-numpy
-scipy
-scikit-learn
+numpy==2.2.6
+scikit-learn==1.7.2
 
 # Computer vision & data augmentation
-albumentations
-opencv-python-headless
-Pillow
+albumentations==2.0.8
+opencv-python-headless==4.12.0.88
+Pillow==12.0.0
 
 # Plotting
-matplotlib
+matplotlib==3.10.7
 
 # Deep learning frameworks
-torch
-torchvision
-tensorflow
-keras
+torch==2.9.0
+torchvision==0.24.0
 
 # Utilities
-tqdm
-PyYAML
-requests
-rich
-GitPython
-fsspec
-wandb
-absl-py
+tqdm==4.67.1
+wandb==0.22.3
+omegaconf==2.3.0

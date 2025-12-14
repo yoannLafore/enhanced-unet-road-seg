@@ -8,23 +8,42 @@ import os
 
 
 class RoadSegDataset(Dataset):
-    def __init__(self, img_paths: list[str], mask_paths: list[str], transform=None):
+    def __init__(
+        self,
+        img_paths: list[str],
+        mask_paths: list[str],
+        transform=None,
+        cache_images: bool = True,
+    ):
         self.img_paths = img_paths
         self.mask_paths = mask_paths
         self.transform = transform
+        self.cache_images = cache_images
+        if self.cache_images:
+            self.cached_images = [None] * len(img_paths)
+            self.cached_masks = [None] * len(mask_paths)
+            for i in range(len(img_paths)):
+                image = Image.open(img_paths[i]).convert("RGB")
+                mask = Image.open(mask_paths[i]).convert("L")
+                self.cached_images[i] = np.array(image)
+                self.cached_masks[i] = np.array(mask)
 
     def __len__(self):
         return len(self.img_paths)
 
     def __getitem__(self, idx: int):
-        img_path = self.img_paths[idx]
-        mask_path = self.mask_paths[idx]
+        if self.cache_images:
+            image = self.cached_images[idx]
+            mask = self.cached_masks[idx]
+        else:
+            img_path = self.img_paths[idx]
+            mask_path = self.mask_paths[idx]
 
-        image = Image.open(img_path).convert("RGB")
-        mask = Image.open(mask_path).convert("L")
+            image = Image.open(img_path).convert("RGB")
+            mask = Image.open(mask_path).convert("L")
 
-        image = np.array(image)
-        mask = np.array(mask)
+            image = np.array(image)
+            mask = np.array(mask)
 
         # Map mask values to 0 and 1
         mask = (mask > 127).astype(np.float32)
@@ -34,7 +53,6 @@ class RoadSegDataset(Dataset):
             image = augmented["image"]
             mask = augmented["mask"]
             mask = mask.unsqueeze(0)  # Add channel dimension
-            # TODO : How do we make sure both are float tensors?
 
         return image, mask
 

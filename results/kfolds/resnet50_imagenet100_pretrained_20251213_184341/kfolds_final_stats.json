@@ -1,0 +1,12 @@
+{
+    "val_loss_mean": 0.638867974281311,
+    "val_loss_std": 0.006501964778027,
+    "val_accuracy_mean": 0.9559599375,
+    "val_accuracy_std": 0.011986794822519783,
+    "val_precision_mean": 0.8973140603700956,
+    "val_precision_std": 0.031276085236049495,
+    "val_recall_mean": 0.882743861026422,
+    "val_recall_std": 0.03016764261765985,
+    "val_f1_score_mean": 0.8896977138443463,
+    "val_f1_score_std": 0.02561224420639907
+}

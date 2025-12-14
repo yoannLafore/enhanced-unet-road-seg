@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision.models as models
 
 
 class DoubleConv(nn.Module):
@@ -30,25 +31,28 @@ class DoubleConv(nn.Module):
 class DownBlock(nn.Module):
     """Perform /2 downsampling using strided convolutions"""
 
-    def __init__(self, in_channels, out_channels):
+    def __init__(self, in_channels, out_channels, use_maxpool=False):
         super().__init__()
 
-        self.down = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, 3, stride=2, padding=1),
-            nn.ReLU(inplace=True),
+        self.down = (
+            nn.Sequential(
+                nn.Conv2d(in_channels, out_channels, 3, stride=2, padding=1),
+                nn.ReLU(inplace=True),
+            )
+            if not use_maxpool
+            else nn.MaxPool2d(2)
         )
-        # TODO : do we relu here ?
 
     def forward(self, x):
         return self.down(x)
 
 
 class Encoder(nn.Module):
-    def __init__(self, in_channels, out_channels):
+    def __init__(self, in_channels, out_channels, use_maxpool=False):
         super().__init__()
 
         self.conv = DoubleConv(in_channels, out_channels)
-        self.down = DownBlock(out_channels, out_channels)
+        self.down = DownBlock(out_channels, out_channels, use_maxpool=use_maxpool)
 
     def forward(self, x):
         x = self.conv(x)
@@ -82,6 +86,13 @@ class Decoder(nn.Module):
 
     def forward(self, x, skip):
         x = self.up(x)
+
+        # Interpolate in case of different sizes due
+        if x.shape[2:] != skip.shape[2:]:
+            x = F.interpolate(
+                x, size=skip.shape[2:], mode="bilinear", align_corners=False
+            )
+
         x = torch.concat([skip, x], dim=1)
 
         return self.conv(x)
@@ -89,13 +100,15 @@ class Decoder(nn.Module):
 
 class Unet(nn.Module):
 
-    def __init__(self, in_channels=3, out_channels=1, dropout_prob=0.5):
+    def __init__(
+        self, in_channels=3, out_channels=1, dropout_prob=0.5, use_maxpool=False
+    ):
         super().__init__()
 
-        self.enc1 = Encoder(in_channels, 64)
-        self.enc2 = Encoder(64, 128)
-        self.enc3 = Encoder(128, 256)
-        self.enc4 = Encoder(256, 512)
+        self.enc1 = Encoder(in_channels, 64, use_maxpool=use_maxpool)
+        self.enc2 = Encoder(64, 128, use_maxpool=use_maxpool)
+        self.enc3 = Encoder(128, 256, use_maxpool=use_maxpool)
+        self.enc4 = Encoder(256, 512, use_maxpool=use_maxpool)
 
         self.bottom_conv = DoubleConv(512, 1024)
         self.bottom_conv2 = DoubleConv(1024, 1024)
@@ -108,7 +121,7 @@ class Unet(nn.Module):
 
         self.conv_map = nn.Conv2d(64, out_channels, 1)
 
-    def forward(self, x):
+    def forward(self, x, get_features=False):
         enc1_out, skip_enc1 = self.enc1(x)
         enc2_out, skip_enc2 = self.enc2(enc1_out)
         enc3_out, skip_enc3 = self.enc3(enc2_out)
@@ -121,10 +134,13 @@ class Unet(nn.Module):
         x = self.dec1(x, skip_enc4)
         x = self.dec2(x, skip_enc3)
         x = self.dec3(x, skip_enc2)
-        x = self.dec4(x, skip_enc1)
+        features = self.dec4(x, skip_enc1)
 
-        logits = self.conv_map(x)
+        logits = self.conv_map(features)
 
         preds = torch.sigmoid(logits)
+
+        if get_features:
+            return logits, preds, features
 
         return logits, preds

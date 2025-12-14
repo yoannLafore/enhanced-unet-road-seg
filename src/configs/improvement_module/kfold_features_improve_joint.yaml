@@ -1,0 +1,63 @@
+task_type: kfold
+
+# Perform k-fold cross-validation on base model + improvement module that uses features
+# with joint training (joint loss)
+kfold:
+  k: 5
+  out_dir: out/kfolds/
+  run_name: improve_joint_with_features
+  make_unique_name: true
+
+train:
+  type: improve
+  run_name: None # Will be set by kfolds
+  log_wandb: false
+  epochs: 300
+  batch_size: 8
+  validate_every: 5
+  checkpoint_every: 50
+  train_jointly: true
+  forward_features: true
+
+  optimizer:
+    class_path: torch.optim.Adam
+    args:
+      lr: 5.0e-04
+
+  lr_scheduler:
+    class_path: torch.optim.lr_scheduler.CosineAnnealingLR
+    args:
+      T_max: 300
+      eta_min: 5.0e-06
+      last_epoch: -1
+
+  criterion:
+    class_path: src.train.utils.loss.get_bce_with_logits_loss
+    args: {}
+
+  transform:
+    class_path: src.preprocessing.transform.augmented_transform
+    args:
+      height: 400
+      width: 400
+
+  collate_fn:
+    class_path: src.train.utils.collate_fn.get_base_collate_fn
+    args: {}
+
+
+base_model:
+  class_path: src.model.unet.Unet
+  args:
+    in_channels: 3
+    out_channels: 1
+    dropout_prob: 0.5
+
+
+improved_model:
+  class_path: src.model.unet.Unet
+  args:
+    in_channels: 65
+    out_channels: 1
+    dropout_prob: 0.5
+

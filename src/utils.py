@@ -1,7 +1,24 @@
 import importlib
 from omegaconf import OmegaConf
+import random
+import numpy as np
+import torch
 
 # Imported from HW2 of the Foundations models and generative AI course
+
+
+def set_seed(seed: int):
+    """
+    Set random seed for reproducibility.
+    """
+    print(f"Setting random seed to {seed}")
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    # torch.use_deterministic_algorithms(True)
 
 
 def load_callable_from_path(path: str):
