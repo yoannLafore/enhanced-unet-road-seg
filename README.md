@@ -242,17 +242,8 @@ K-fold evaluation is implemented in `kfolds.py`.
 * Aggregates final metrics across folds to produce averaged performance results.
 * Saves all results via local logging for reproducibility and comparison.
 
-### 5. ResNet Pre-training
 
-To evaluate the impact of external pretraining before integrating ResNet encoders into the U-Net, a dedicated training pipeline was implemented to pretrain ResNet models on the **ImageNet100** dataset. This code is located under the `pretraining/` directory.
-
-The script `resnet_pretrain_imagenet100.py` provides a standard training routine using **cross-entropy loss**. In the reported experiments, models were pretrained for **30 epochs** with a learning rate of **2e-3** and a weight decay of **1e-4**. The resulting weights are saved to the `pretrained_resnets/` directory at the repository root.
-
-Pretraining was performed for **ResNet-18, ResNet-34, ResNet-50, and ResNet-101**. For convenience, the script `run_all_pretraining.sh` is provided to train all models sequentially.
-
-To run the pretraining pipeline, the ImageNet100 dataset must first be downloaded and formatted following the procedure described in the [Datasets](#datasets) section. The dataset path should then be set in `run_all_pretraining.sh` via the `DATA_ROOT` variable.
-
-### 6. Helpers and Utilities
+### 5. Helpers and Utilities
 
 Helper functions adapted from the provided handout code for generating AIcrowd submissions are located under the `helper/` directory.
 
