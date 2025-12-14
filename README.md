@@ -54,7 +54,7 @@ To generate the submission, run the following command from the repository root:
 python -m run
 ```
 
-The predicted mask images will be saved in the `generated_test/` directory, and the corresponding submission file will be created at the repository root as `submission.csv`.
+The predicted mask images will be saved in the `generated_test/` directory, and the corresponding submission file will be created at the repository root as `submission_unet_compet.csv`.
 
 ### (Optional) 6. Training & Results Reproducibility
 
