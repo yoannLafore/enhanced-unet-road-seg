@@ -179,14 +179,14 @@ This section summarizes the training and evaluation pipeline implemented under t
 
 #### Loss & Data Loading
 
-* **Loss** functions are defined in `loss.py` (binary cross-entropy is currently supported).
-* **Batch collation** is handled in `collate_fn.py`, which concatenates images and masks into PyTorch tensors compatible with the DataLoader.
+* **Loss** functions are defined in `utils/loss.py` (binary cross-entropy is currently supported).
+* **Batch collation** is handled in `utils/collate_fn.py`, which concatenates images and masks into PyTorch tensors compatible with the DataLoader.
 
 ---
 
 #### Training Epoch
 
-Per-epoch training logic is implemented in `train_epoch.py`.
+Per-epoch training logic is implemented in `epoch/train_epoch.py`.
 A standard training routine (`train_epoch`) is provided for all base models, along with specialized procedures for U-Nets extended with a refinement module.
 
 Two training strategies are available for the refinement setup:
@@ -204,7 +204,7 @@ Both strategies optionally allow forwarding intermediate U-Net feature maps to t
 
 #### Evaluation Epoch
 
-Model evaluation is implemented in `eval_epoch.py`.
+Model evaluation is implemented in `epoch/eval_epoch.py`.
 
 * The validation set is processed to produce binary masks using a **0.5 threshold**.
 * Metrics computed include **Accuracy, F1-score, Precision, and Recall**.
@@ -219,7 +219,7 @@ Two evaluation functions are provided:
 
 #### Training Loop
 
-The complete training loop is implemented in `unet_train.py` and is fully driven by the configuration framework described earlier.
+The complete training loops are implemented in `loop/` and are fully driven by the configuration framework described earlier.
 
 * Handles dataloaders, optimizers, schedulers, and validation.
 * Supports both:
@@ -232,13 +232,13 @@ Extensive logging is performed:
 * **Locally**: checkpoints, metrics, and configs saved to the configured output directory.
 * **Online (optional)**: experiment tracking via Weights & Biases.
 
-Training can be launched from any configuration file using the `train_from_cfg` entry point.
+Training can be launched from any configuration file using the `train/train_from_cfg.py` entry point.
 
 ---
 
 #### K-Fold Cross-Validation
 
-K-fold evaluation is implemented in `kfolds.py`.
+K-fold evaluation is implemented in `kfolds_from_cfg.py`.
 
 * Trains models across all folds defined in a configuration file.
 * Aggregates final metrics across folds to produce averaged performance results.
