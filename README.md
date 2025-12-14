@@ -1,4 +1,4 @@
-# Architectural Improvements to U-Net for Road Segmentation
+# Architectural Enhancements to U-Net for Road Segmentation
 Testing architectural modifications to the U-Net framework to enhance performance for road segmentation tasks.
 
 ## Overview
