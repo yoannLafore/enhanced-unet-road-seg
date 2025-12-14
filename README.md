@@ -166,7 +166,7 @@ One modification concerns the downsampling stages: strided convolutions are used
 
 The U-Net with a ResNet backbone is implemented in `resnet_unet.py`. In this variant, the standard U-Net encoder is replaced by the encoding layers of a ResNet architecture.
 
-A general `ResNetUnet` class is defined, supporting ResNet-18, ResNet-34, ResNet-50, and ResNet-101 backbones. The implementation allows either the use of pretrained weights from `torchvision` (used for testing purposes only) or loading weights from externally pretrained ResNet models (used for the experiments reported in the study).
+A general `ResNetUnet` class is defined, supporting ResNet-18, ResNet-34, ResNet-50, and ResNet-101 backbones. The implementation allows the use of pretrained weights from `torchvision` (used for the experiments reported in the study).
 
 For convenience, specialized wrapper classes are also provided: `ResNetUnet18`, `ResNetUnet34`, `ResNetUnet50`, and `ResNetUnet101`.
 
