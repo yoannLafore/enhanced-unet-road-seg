@@ -59,6 +59,10 @@ def train_improve_model_on_ds(train_ds, test_ds, cfg):
 
     progress = tqdm(range(nb_epochs), desc="Training Epochs")
 
+    # Save best model based on validation F1 score
+    save_best_f1_model = bool(train_cfg.get("save_best_f1_model", False))
+    best_val_f1 = 0.0
+
     for epoch in progress:
         # Training step
         if train_jointly:
@@ -120,6 +124,22 @@ def train_improve_model_on_ds(train_ds, test_ds, cfg):
             )
 
             val_stats_improved["epoch"] = epoch + 1
+
+            if save_best_f1_model:
+                current_val_f1 = val_stats_improved["val_f1_score"]
+                if current_val_f1 > best_val_f1:
+                    best_val_f1 = current_val_f1
+                    best_base_model_path = os.path.join(
+                        out_dir, f"best_base_model_{epoch+1}.pth"
+                    )
+                    best_improved_model_path = os.path.join(
+                        out_dir, f"best_improved_model_{epoch+1}.pth"
+                    )
+                    torch.save(base_model.state_dict(), best_base_model_path)
+                    torch.save(improved_model.state_dict(), best_improved_model_path)
+                    print(
+                        f"New best model saved with F1: {best_val_f1:.4f} at epoch {epoch+1}"
+                    )
 
             # Save validation stats
             append_val_json(validation_file, val_stats_improved)
