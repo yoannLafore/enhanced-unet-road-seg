@@ -30,7 +30,7 @@ A justification for the chosen libraries is provided further below.
 
 Because the competition model weights exceed GitHub’s file size limit, they cannot be included directly in the repository. To obtain the model weights:
 
-* Navigate to the GitHub repository on the **main** branch (default)
+* Navigate to the GitHub repository on the **main** branch
 * Open the **[Competition Model Weights](https://github.com/CS-433/project-2-roadseg_nsy/releases/tag/model_weights)** release
 * Download the archive `competition_model.zip`
 * Extract it at the repository root
@@ -54,7 +54,7 @@ To generate the submission, run the following command from the repository root:
 python -m run
 ```
 
-The predicted mask images will be saved in the `generated_test/` directory, and the corresponding submission file will be created at the repository root as `submission_unet_compet.csv`.
+The predicted mask images will be saved in the `generated_test/` directory, and the corresponding submission file will be created at the repository root as `submission_compet.csv`.
 
 ### (Optional) 6. Training & Results Reproducibility
 
@@ -91,6 +91,7 @@ The following section provides the sources and justification for the external li
 
 * `numpy`: for numerical computations and array handling.
 * `scikit-learn`: for computing validation metrics.
+* `pandas`: for results management.
 
 #### Computer Vision & Data Augmentation
 
