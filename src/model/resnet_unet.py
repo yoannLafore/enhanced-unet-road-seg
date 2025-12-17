@@ -10,8 +10,17 @@ class ResNetUnet(nn.Module):
         *args,
         **kwargs,
     ):
+        """
+        ResNet-Unet model.
+        Args:
+            backbone (str): ResNet backbone type. One of 'resnet18', 'resnet34', 'resnet50', 'resnet101'.
+            from_existing_resnet (nn.Module, optional): Existing ResNet model to use for encoder weights.
+            weights (torchvision.models.ResNetWeights, optional): Pretrained weights for the ResNet backbone.
+        """
+
         super().__init__()
 
+        # Load ResNet backbone
         if backbone == "resnet18":
             resnet = models.resnet18(weights=weights)
             enc_channels = [64, 64, 128, 256, 512]
@@ -62,6 +71,13 @@ class ResNetUnet(nn.Module):
         self.conv_map = nn.Conv2d(enc_channels[0], 1, 1)
 
     def forward(self, x):
+        """Forward pass of the ResNet-Unet model.
+        Args:
+            x (torch.Tensor): Input tensor of shape (B, C, H, W).
+        Returns:
+            logits (torch.Tensor): Output logits of shape (B, 1, H, W).
+            preds (torch.Tensor): Output predictions after sigmoid of shape (B, 1, H, W).
+        """
 
         x_in = x
 
@@ -78,6 +94,7 @@ class ResNetUnet(nn.Module):
         x = self.dec2(x, skip1)
         x = self.dec1(x, skip0)
 
+        # Upsample to match input size if necessary
         if x.shape[2:] != x_in.shape[2:]:
             x = F.interpolate(
                 x, size=x_in.shape[2:], mode="bilinear", align_corners=False
@@ -89,8 +106,16 @@ class ResNetUnet(nn.Module):
         return logits, preds
 
 
+# Specific ResNet-Unet variants
 class ResNet18Unet(nn.Module):
     def __init__(self, pretrained=False, from_existing_resnet=None, *args, **kwargs):
+        """
+        Initialize the ResNet18-Unet model.
+
+        Args:
+            pretrained (bool): If True, use ImageNet pretrained weights for the ResNet18 backbone.
+            from_existing_resnet (nn.Module, optional): Existing ResNet model to use for encoder weights.
+        """
         super().__init__()
         self.unet = ResNetUnet(
             backbone="resnet18",
@@ -106,6 +131,13 @@ class ResNet18Unet(nn.Module):
 
 class ResNet34Unet(nn.Module):
     def __init__(self, pretrained=False, from_existing_resnet=None, *args, **kwargs):
+        """
+        Initialize the ResNet34-Unet model.
+
+        Args:
+            pretrained (bool): If True, use ImageNet pretrained weights for the ResNet34 backbone.
+            from_existing_resnet (nn.Module, optional): Existing ResNet model to use for encoder weights.
+        """
         super().__init__()
         self.unet = ResNetUnet(
             backbone="resnet34",
@@ -121,6 +153,13 @@ class ResNet34Unet(nn.Module):
 
 class ResNet50Unet(nn.Module):
     def __init__(self, pretrained=False, from_existing_resnet=None, *args, **kwargs):
+        """
+        Initialize the ResNet50-Unet model.
+
+        Args:
+            pretrained (bool): If True, use ImageNet pretrained weights for the ResNet50 backbone.
+            from_existing_resnet (nn.Module, optional): Existing ResNet model to use for encoder weights.
+        """
         super().__init__()
         self.unet = ResNetUnet(
             backbone="resnet50",
@@ -136,6 +175,13 @@ class ResNet50Unet(nn.Module):
 
 class ResNet101Unet(nn.Module):
     def __init__(self, pretrained=False, from_existing_resnet=None, *args, **kwargs):
+        """
+        Initialize the ResNet101-Unet model.
+
+        Args:
+            pretrained (bool): If True, use ImageNet pretrained weights for the ResNet101 backbone.
+            from_existing_resnet (nn.Module, optional): Existing ResNet model to use for encoder weights.
+        """
         super().__init__()
         self.unet = ResNetUnet(
             backbone="resnet101",
@@ -147,72 +193,3 @@ class ResNet101Unet(nn.Module):
 
     def forward(self, x):
         return self.unet(x)
-
-
-def load_image100_pretrained_resnet(model_path, resnet_type="resnet50"):
-    """
-    Load a ResNet50 model pretrained on ImageNet100.
-    """
-    if resnet_type == "resnet18":
-        resnet = models.resnet18(weights=None)
-    elif resnet_type == "resnet34":
-        resnet = models.resnet34(weights=None)
-    elif resnet_type == "resnet50":
-        resnet = models.resnet50(weights=None)
-    elif resnet_type == "resnet101":
-        resnet = models.resnet101(weights=None)
-    else:
-        raise ValueError(f"Unsupported resnet_type '{resnet_type}'")
-
-    in_features = resnet.fc.in_features
-    resnet.fc = nn.Linear(in_features, 100)  # ImageNet100 has 100 classes
-
-    resnet.load_state_dict(torch.load(model_path))
-
-    return resnet
-
-
-def get_resnetunet(
-    resnet_type="resnet50",
-    existing_resnet_path=None,
-    *args,
-    **kwargs,
-):
-    from_existing_resnet = None
-    if existing_resnet_path is not None:
-        from_existing_resnet = load_image100_pretrained_resnet(
-            existing_resnet_path, resnet_type=resnet_type
-        )
-        print("Loaded existing ResNet pretrained on ImageNet100")
-
-    """
-    Get a ResNet-Unet model.
-    """
-    if resnet_type == "resnet18":
-        model = ResNet18Unet(
-            from_existing_resnet=from_existing_resnet,
-            *args,
-            **kwargs,
-        )
-    elif resnet_type == "resnet34":
-        model = ResNet34Unet(
-            from_existing_resnet=from_existing_resnet,
-            *args,
-            **kwargs,
-        )
-    elif resnet_type == "resnet50":
-        model = ResNet50Unet(
-            from_existing_resnet=from_existing_resnet,
-            *args,
-            **kwargs,
-        )
-    elif resnet_type == "resnet101":
-        model = ResNet101Unet(
-            from_existing_resnet=from_existing_resnet,
-            *args,
-            **kwargs,
-        )
-    else:
-        raise ValueError(f"Unsupported resnet_type '{resnet_type}'")
-
-    return model
