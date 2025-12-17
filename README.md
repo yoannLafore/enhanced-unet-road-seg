@@ -30,7 +30,7 @@ A justification for the chosen libraries is provided further below.
 
 Because the competition model weights exceed GitHub’s file size limit, they cannot be included directly in the repository. To obtain the model weights:
 
-* Navigate to the GitHub repository on the **feedback** branch (default)
+* Navigate to the GitHub repository on the **main** branch (default)
 * Open the **[Competition Model Weights](https://github.com/CS-433/project-2-roadseg_nsy/releases/tag/model_weights)** release
 * Download the archive `competition_model.zip`
 * Extract it at the repository root
