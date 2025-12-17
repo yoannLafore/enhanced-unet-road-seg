@@ -1,6 +1,7 @@
 # Core array & math
 numpy==2.2.6
 scikit-learn==1.7.2
+pandas==2.3.3
 
 # Computer vision & data augmentation
 albumentations==2.0.8
