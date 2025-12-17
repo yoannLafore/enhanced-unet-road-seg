@@ -6,7 +6,7 @@ random_state: 43 # Global random seed for reproducibility
 device: cuda # Device to use for computations (e.g., 'cuda' or 'cpu')
 
 data: 
-  train_dir: /home/yoann/Desktop/project-2-roadseg_nsy/data/training/ # Path to the training data provided on aicrowd
+  train_dir:  # TODO: Path to the training data provided on aicrowd. Ex: /path/to/data/training/
   test_size: 0.2 # Proportion of data to use for validation
 
 
