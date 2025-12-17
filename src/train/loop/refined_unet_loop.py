@@ -2,6 +2,15 @@ from src.train.loop.loop_utils import *
 
 
 def train_improve_model_on_ds(train_ds, test_ds, cfg):
+    """Train a base model and an improvement module on the given datasets.
+    Args:
+        train_ds (Dataset): Training dataset.
+        test_ds (Dataset): Testing/validation dataset.
+        cfg (DictConfig): Configuration for the run.
+    Returns:
+        dict: Final statistics after training.
+    """
+
     print(f"Using out dir: {cfg.train.out_dir}")
 
     train_cfg = cfg.train
@@ -30,6 +39,7 @@ def train_improve_model_on_ds(train_ds, test_ds, cfg):
     validate_every = int(train_cfg.validate_every)
     checkpoint_every = int(train_cfg.checkpoint_every)
 
+    # Create optimizers, criterions and lr schedulers
     if train_jointly:
         params = list(base_model.parameters()) + list(improved_model.parameters())
         optimizer = build_from_cfg(train_cfg.optimizer, params=params)
