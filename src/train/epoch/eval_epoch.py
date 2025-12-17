@@ -18,6 +18,20 @@ def _evaluate_epoch(
     prefix="",
     log_blacklist=None,
 ):
+    """Evaluate model for one epoch.
+    Args:
+        pred_get_fn (callable): Function that takes images and returns predictions.
+        dataloader (DataLoader): DataLoader for the evaluation dataset.
+        criterion (callable): Loss function.
+        device (torch.device): Device to run the evaluation on.
+        threshold (float): Threshold to convert probabilities to binary predictions.
+        log_wandb (bool): Whether to log metrics and images to wandb.
+        prefix (str): Prefix for metric names when logging.
+        log_blacklist (list[str], optional): List of metric/image names to exclude from logging.
+    Returns:
+        dict: Dictionary containing evaluation metrics.
+    """
+
     # Compute accuracy, precision, recall, F1-score on validation set
     # Also generate the mask, compare them to ground truth and save to wandb
     running_loss = 0.0
@@ -111,6 +125,18 @@ def _evaluate_epoch(
 
 
 def evaluate_epoch(model, dataloader, criterion, device, threshold=0.5, log_wandb=True):
+    """Basic evaluation of a model for one epoch.
+    Args:
+        model (nn.Module): The model to evaluate.
+        dataloader (DataLoader): DataLoader for the evaluation dataset.
+        criterion (callable): Loss function.
+        device (torch.device): Device to run the evaluation on.
+        threshold (float): Threshold to convert probabilities to binary predictions.
+        log_wandb (bool): Whether to log metrics and images to wandb.
+    Returns:
+        dict: Dictionary containing evaluation metrics.
+    """
+
     model.eval()
 
     def pred_get_fn(images):
@@ -139,6 +165,20 @@ def evaluate_epoch_improve_module(
     log_wandb=True,
     forward_features=False,
 ):
+    """Evaluate a base model and an refinement module for one epoch.
+    Args:
+        base_model (nn.Module): The base model to evaluate.
+        improvement_model (nn.Module): The improvement module to evaluate.
+        dataloader (DataLoader): DataLoader for the evaluation dataset.
+        criterion (callable): Loss function.
+        device (torch.device): Device to run the evaluation on.
+        threshold (float): Threshold to convert probabilities to binary predictions.
+        log_wandb (bool): Whether to log metrics and images to wandb.
+        forward_features (bool): Whether to forward intermediate features from base model to improvement model.
+    Returns:
+        dict, dict: Two dictionaries containing evaluation metrics for base and refined models.
+    """
+
     base_model.eval()
     improvement_model.eval()
 
