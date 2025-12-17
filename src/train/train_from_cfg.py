@@ -8,6 +8,13 @@ from src.train.loop.refined_unet_loop import train_improve_model_on_ds
 
 
 def train_from_cfg(cfg):
+    """Train a model based on the provided configuration.
+    Configuration specifications can be found in src/configs/sample/train_sample.yaml.
+
+    Args:
+        cfg (dict): Configuration dictionary containing all necessary settings.
+    """
+
     random_state = cfg.random_state
     set_seed(random_state)
 

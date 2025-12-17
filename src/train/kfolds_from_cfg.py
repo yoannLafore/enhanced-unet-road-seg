@@ -8,6 +8,13 @@ import pandas as pd
 
 
 def perform_kfolds_from_cfg(cfg: dict):
+    """Perform k-fold cross-validation training based on the provided configuration.
+    Configuration specifications can be found in src/configs/sample/kfolds_sample.yaml.
+
+    Args:
+        cfg (dict): Configuration dictionary containing all necessary settings.
+    """
+
     random_state = cfg.random_state
     set_seed(random_state)
 
