@@ -32,6 +32,15 @@ def get_dataloaders(
     val_ds,
     cfg,
 ):
+    """Create training and validation dataloaders.
+    Args:
+        train_ds (Dataset): Training dataset.
+        val_ds (Dataset): Validation dataset.
+        cfg (DictConfig): Configuration of the run.
+    Returns:
+        Tuple[DataLoader, DataLoader]: Training and validation dataloaders.
+    """
+
     collate_fn = build_from_cfg(cfg.train.collate_fn)
     batch_size = int(cfg.train.batch_size)
 
@@ -62,6 +71,13 @@ def get_dataloaders(
 
 
 def make_out_files_dirs(out_dir: str):
+    """Create output directories and file paths for checkpoints and validation stats.
+    Args:
+        out_dir (str): Output directory.
+    Returns:
+        Tuple[str, str, str]: Paths for checkpoint directory, validation stats file, and final stats file.
+    """
+
     checkpoint_dir = os.path.join(out_dir, "checkpoints/")
     validation_file = os.path.join(out_dir, "validation.json")
     final_stats_file = os.path.join(out_dir, "final_stats.json")
@@ -71,10 +87,23 @@ def make_out_files_dirs(out_dir: str):
 
 
 def save_config_file(out_dir, cfg):
+    """Save the configuration file to the output directory.
+
+    Args:
+        out_dir (str): Output directory.
+        cfg (DictConfig): Configuration object of the run.
+    """
     dump_cfg(cfg, os.path.join(out_dir, "config.yaml"))
 
 
 def load_pretrained_if_needed(model, train_cfg, device):
+    """Load pretrained weights into the model if specified in the configuration.
+    Args:
+        model (nn.Module): The model to load weights into.
+        train_cfg (DictConfig): Training configuration.
+        device (torch.device): Device to map the weights to.
+    """
+
     # Use pretrained weights if specified
     pretrained_weights = train_cfg.get("pretrained_weights", None)
     if pretrained_weights is not None:
