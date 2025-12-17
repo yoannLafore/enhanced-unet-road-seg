@@ -6,6 +6,15 @@ import cv2
 def augmented_transform(
     width: int = 400, height: int = 400, seed: int = 42
 ) -> A.Compose:
+    """Create an augmented transformation pipeline for image preprocessing.
+
+    Args:
+        width (int): Target width of the images after transformation.
+        height (int): Target height of the images after transformation.
+        seed (int): Random seed for reproducibility.
+    Returns:
+        A.Compose: The composed augmentation pipeline.
+    """
     return A.Compose(
         [
             A.RandomResizedCrop(
@@ -43,6 +52,13 @@ def augmented_transform(
 
 
 def default_transform(seed: int = 42) -> A.Compose:
+    """Create a default transformation pipeline for image preprocessing.
+
+    Args:
+        seed (int): Random seed for reproducibility. Although no randomness is used here, it's included for call consistency.
+    Returns:
+        A.Compose: The composed augmentation pipeline.
+    """
     return A.Compose(
         [
             A.ToFloat(max_value=255.0),
