@@ -8,6 +8,8 @@ import os
 
 
 class RoadSegDataset(Dataset):
+    """Dataset wrapper for the aicrow dataset."""
+
     def __init__(
         self,
         img_paths: list[str],
@@ -15,6 +17,14 @@ class RoadSegDataset(Dataset):
         transform=None,
         cache_images: bool = True,
     ):
+        """Initialize the RoadSegDataset.
+
+        Args:
+            img_paths (list[str]): List of image file paths.
+            mask_paths (list[str]): List of mask file paths.
+            transform (callable, optional): Transform to be applied on the images and masks.
+            cache_images (bool, optional): Whether to cache the images and masks in memory.
+        """
         self.img_paths = img_paths
         self.mask_paths = mask_paths
         self.transform = transform
@@ -58,6 +68,14 @@ class RoadSegDataset(Dataset):
 
 
 def _load_image_paths(data_dir: str):
+    """Load all image and mask file paths from the dataset directory.
+    Args:
+        data_dir (str): Path to the dataset directory.
+    Returns:
+        all_imgs (list[str]): List of all image file paths.
+        all_masks (list[str]): List of all mask file paths.
+    """
+
     img_dir = os.path.join(data_dir, "images/")
     mask_dir = os.path.join(data_dir, "groundtruth/")
 
@@ -78,6 +96,18 @@ def load_train_test(
     test_size: float = 0.2,
     random_state: int = 42,
 ):
+    """Load train and test datasets.
+    Args:
+        data_dir (str): Path to the dataset directory.
+        train_transform (callable): Transform to be applied on the training images and masks.
+        test_transform (callable, optional): Transform to be applied on the test images and masks.
+        test_size (float, optional): Proportion of the dataset to include in the test split.
+        random_state (int, optional): Random seed for reproducibility.
+    Returns:
+        train_dataset (RoadSegDataset): Training dataset.
+        test_dataset (RoadSegDataset): Test dataset.
+    """
+
     all_imgs, all_masks = _load_image_paths(data_dir)
 
     # Split into train and test
@@ -103,6 +133,17 @@ def load_k_fold_datasets(
     k: int = 5,
     random_state: int = 42,
 ):
+    """Load k-fold datasets.
+    Args:
+        data_dir (str): Path to the dataset directory.
+        train_transform (callable): Transform to be applied on the training images and masks.
+        test_transform (callable, optional): Transform to be applied on the test images and masks.
+        k (int, optional): Number of folds.
+        random_state (int, optional): Random seed for reproducibility.
+    Returns:
+        datasets (list[tuple[RoadSegDataset, RoadSegDataset]]): List of (train_dataset, val_dataset) tuples for each fold.
+    """
+
     all_imgs, all_masks = _load_image_paths(data_dir)
 
     # Shuffle data
