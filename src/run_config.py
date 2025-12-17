@@ -3,6 +3,8 @@ from src.utils import *
 from src.train.kfolds_from_cfg import perform_kfolds_from_cfg
 from src.train.train_from_cfg import train_from_cfg
 
+# Entry point for running training or k-fold cross-validation based on a configuration file.
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
