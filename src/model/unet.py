@@ -5,7 +5,7 @@ import torchvision.models as models
 
 
 class DoubleConv(nn.Module):
-    """(convolution => [BN] => ReLU) * 2"""
+    """(convolution => [BN] => LeakyReLU) * 2"""
 
     def __init__(
         self,
@@ -13,6 +13,13 @@ class DoubleConv(nn.Module):
         out_channels,
         kernel_size=3,
     ):
+        """Initialize DoubleConv block.
+        Args:
+            in_channels (int): Number of input channels.
+            out_channels (int): Number of output channels.
+            kernel_size (int): Size of the convolutional kernel.
+        """
+
         super().__init__()
 
         self.double_conv = nn.Sequential(
@@ -29,9 +36,16 @@ class DoubleConv(nn.Module):
 
 
 class DownBlock(nn.Module):
-    """Perform /2 downsampling using strided convolutions"""
+    """Perform /2 downsampling using strided convolutions or maxpooling."""
 
     def __init__(self, in_channels, out_channels, use_maxpool=False):
+        """Initialize DownBlock.
+
+        Args:
+            in_channels (int): Number of input channels.
+            out_channels (int): Number of output channels.
+            use_maxpool (bool): Whether to use max pooling instead of strided convolutions.
+        """
         super().__init__()
 
         self.down = (
@@ -48,7 +62,16 @@ class DownBlock(nn.Module):
 
 
 class Encoder(nn.Module):
+    """Encoder block for the U-Net."""
+
     def __init__(self, in_channels, out_channels, use_maxpool=False):
+        """Initialize Encoder block for the U-Net.
+
+        Args:
+            in_channels (int): Number of input channels.
+            out_channels (int): Number of output channels.
+            use_maxpool (bool): Whether to use max pooling instead of strided convolutions.
+        """
         super().__init__()
 
         self.conv = DoubleConv(in_channels, out_channels)
@@ -61,8 +84,15 @@ class Encoder(nn.Module):
 
 
 class UpBlock(nn.Module):
+    """UpBlock for the U-Net."""
 
     def __init__(self, in_channels, out_channels):
+        """Initialize UpBlock for the U-Net.
+
+        Args:
+            in_channels (int): Number of input channels.
+            out_channels (int): Number of output channels.
+        """
         super().__init__()
 
         self.up = nn.Sequential(
@@ -79,12 +109,29 @@ class Decoder(nn.Module):
     def __init__(
         self, in_channels, out_channels_up, out_channels_conv, in_channels_skip
     ):
+        """Initialize Decoder block for the U-Net.
+
+        Args:
+            in_channels (int): Number of input channels.
+            out_channels_up (int): Number of output channels for the upsampling block.
+            out_channels_conv (int): Number of output channels for the convolutional block.
+            in_channels_skip (int): Number of input channels for the skip connection.
+        """
         super().__init__()
 
         self.up = UpBlock(in_channels, out_channels_up)
         self.conv = DoubleConv(out_channels_up + in_channels_skip, out_channels_conv)
 
     def forward(self, x, skip):
+        """Forward pass of the Decoder block.
+
+        Args:
+            x (Tensor): Input tensor.
+            skip (Tensor): Skip connection tensor.
+
+        Returns:
+            Tensor: Output tensor after upsampling and convolution.
+        """
         x = self.up(x)
 
         # Interpolate in case of different sizes due
@@ -99,10 +146,19 @@ class Decoder(nn.Module):
 
 
 class Unet(nn.Module):
+    """U-Net model."""
 
     def __init__(
         self, in_channels=3, out_channels=1, dropout_prob=0.5, use_maxpool=False
     ):
+        """Initialize U-Net model.
+
+        Args:
+            in_channels (int): Number of input channels.
+            out_channels (int): Number of output channels.
+            dropout_prob (float): Dropout probability at the bottom convolutional block.
+            use_maxpool (bool): Whether to use max pooling instead of strided convolutions.
+        """
         super().__init__()
 
         self.enc1 = Encoder(in_channels, 64, use_maxpool=use_maxpool)
@@ -122,6 +178,16 @@ class Unet(nn.Module):
         self.conv_map = nn.Conv2d(64, out_channels, 1)
 
     def forward(self, x, get_features=False):
+        """Forward pass of the U-Net model.
+
+        Args:
+            x (Tensor): Input tensor.
+            get_features (bool): Whether to return intermediate features.
+
+        Returns:
+            Tuple[Tensor, Tensor]: Logits and predictions.
+            or Tuple[Tensor, Tensor, Tensor]: Logits, predictions, and features if get_features is True.
+        """
         enc1_out, skip_enc1 = self.enc1(x)
         enc2_out, skip_enc2 = self.enc2(enc1_out)
         enc3_out, skip_enc3 = self.enc3(enc2_out)
