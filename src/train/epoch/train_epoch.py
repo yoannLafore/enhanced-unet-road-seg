@@ -6,6 +6,19 @@ import wandb
 def train_epoch(
     model, dataloader, optimizer, criterion, device, log_wandb=True, use_preds=False
 ):
+    """Basic training of a model for one epoch.
+    Args:
+        model (nn.Module): The model to train.
+        dataloader (DataLoader): DataLoader for the training dataset.
+        optimizer (Optimizer): Optimizer for model parameters.
+        criterion (callable): Loss function.
+        device (torch.device): Device to run the training on.
+        log_wandb (bool): Whether to log metrics to wandb.
+        use_preds (bool): Whether to compute loss on predictions instead of logits.
+    Returns:
+        float: Average training loss for the epoch.
+    """
+
     model.train()
     running_loss = 0.0
 
@@ -48,6 +61,22 @@ def train_epoch_improve_module_sep(
     log_wandb=True,
     forward_features=False,
 ):
+    """Train a base model and an improvement module for one epoch separately.
+    Args:
+        base_model (nn.Module): The base model to train.
+        improvement_model (nn.Module): The improvement module to train.
+        base_opt (Optimizer): Optimizer for base model parameters.
+        improvement_opt (Optimizer): Optimizer for improvement module parameters.
+        dataloader (DataLoader): DataLoader for the training dataset.
+        base_criterion (callable): Loss function for the base model.
+        improvement_criterion (callable): Loss function for the improvement module.
+        device (torch.device): Device to run the training on.
+        log_wandb (bool): Whether to log metrics to wandb.
+        forward_features (bool): Whether to forward intermediate features from base model to improvement model.
+    Returns:
+        Tuple[float, float]: Average training loss for the base model and improvement module for the epoch.
+    """
+
     base_model.train()
     improvement_model.train()
 
@@ -107,6 +136,20 @@ def train_epoch_improve_module_joint(
     log_wandb=True,
     forward_features=False,
 ):
+    """Train a base model and an improvement module for one epoch jointly.
+    Args:
+        base_model (nn.Module): The base model to train.
+        improvement_model (nn.Module): The improvement module to train.
+        optimizer (Optimizer): Optimizer for both model parameters.
+        dataloader (DataLoader): DataLoader for the training dataset.
+        criterion (callable): Loss function.
+        device (torch.device): Device to run the training on.
+        log_wandb (bool): Whether to log metrics to wandb.
+        forward_features (bool): Whether to forward intermediate features from base model to improvement model.
+    Returns:
+        float: Average training loss for the epoch.
+    """
+
     base_model.train()
     improvement_model.train()
 
