@@ -5,6 +5,10 @@ from src.utils import *
 
 
 def get_base_collate_fn():
+    """Wrapper to get the base collate function.
+    Returns:
+        callable: The base collate function.
+    """
     return base_collate_fn
 
 
