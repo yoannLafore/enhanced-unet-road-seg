@@ -12,12 +12,12 @@ from src.helper.mask_to_submission import create_submission
 
 # TODO: Set the correct paths before running
 
-# You should extract the "compet_unet.zip" archive at the repository root and the path should be already correct
-MODEL_PATH = "competition_model/compet_unet.pth"
+# You should extract the "compet_resnet_unet.zip" archive at the repository root and the path should be already correct
+MODEL_PATH = "competition_model/compet_resnet_unet.pth"
 TEST_IMGS_DIR = ""  # Set the path to your test images directory: Ex: "/path/to/data/test_set_images/"
 
 THRESHOLD = 0.4
-SUBMISSION_FILENAME = "submission_unet_compet.csv"
+SUBMISSION_FILENAME = "submission_compet.csv"
 
 
 def flip_rotate_images(images: torch.Tensor) -> torch.Tensor:
@@ -120,7 +120,7 @@ def main():
     print(f"Using device: {device}")
 
     # Load model
-    model = Unet()
+    model = ResNet34Unet()
     model.load_state_dict(torch.load(MODEL_PATH))
     model.eval()
     model.to(device)

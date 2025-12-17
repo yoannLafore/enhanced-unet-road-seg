@@ -35,7 +35,7 @@ Because the competition model weights exceed GitHub’s file size limit, they ca
 * Download the archive `competition_model.zip`
 * Extract it at the repository root
 
-This will create the directory `competition_model/` containing the file `compet_unet.pth`, which holds the competition model weights.
+This will create the directory `competition_model/` containing the file `compet_resnet_unet.pth`, which holds the competition model weights.
 
 
 ### 4. Dataset Path
