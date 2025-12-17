@@ -2,6 +2,17 @@ from src.train.loop.loop_utils import *
 
 
 def train_model_on_ds(train_ds, test_ds, cfg):
+    """Train a (Resnet)UNet model on the given datasets.
+
+    Args:
+        train_ds (Dataset): Training dataset.
+        test_ds (Dataset): Testing/validation dataset.
+        cfg (DictConfig): Configuration for the run.
+
+    Returns:
+        dict: Final statistics after training.
+    """
+
     print(f"Using out dir: {cfg.train.out_dir}")
 
     train_cfg = cfg.train
