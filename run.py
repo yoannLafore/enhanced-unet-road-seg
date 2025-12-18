@@ -121,7 +121,7 @@ def main():
 
     # Load model
     model = ResNet34Unet()
-    model.load_state_dict(torch.load(MODEL_PATH))
+    model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
     model.eval()
     model.to(device)
     print("Model loaded successfully.")
