@@ -1,5 +1,6 @@
 # Architectural Enhancements to U-Net for Road Segmentation
-Testing architectural modifications to the U-Net framework to enhance performance for road segmentation tasks.
+Testing architectural modifications to the U-Net framework to enhance performance for road segmentation tasks.  
+Read the report **[here](https://raw.githubusercontent.com/yoannLafore/enhanced-unet-road-seg/4c1577a6373e0f0c768cbe9c6170d438c95a3041/report/architectural-enhancements-unet-road-segmentation.pdf)**.
 
 ## Overview
 
